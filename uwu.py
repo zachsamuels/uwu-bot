@@ -17,7 +17,7 @@ import logging.handlers
 
 logger = logging.getLogger('bot')
 logger.setLevel(logging.INFO)
-handler = logging.handlers.TimedRotatingFileHandler(filename=f'bot.log', encoding='utf-8', when="D", interval=1, utc=True, backupCount=10)
+handler = logging.handlers.TimedRotatingFileHandler(filename=f'logs/bot.log', encoding='utf-8', when="D", interval=1, utc=True, backupCount=10)
 handler.setFormatter(logging.Formatter('[%(asctime)s:%(levelname)s:%(name)s] %(message)s'))
 logger.addHandler(handler)
 
