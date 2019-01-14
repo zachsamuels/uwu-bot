@@ -132,7 +132,7 @@ uwu rules. You must follow these or we will take action
             e = discord.Embed(colour=0x7289da, description='The image may not be visible')
             e.set_author(name=f"{user.name} sent in {chnl.name}")
             e.set_image(url=snop['message'])
-            e.set_footer(text=f"sniped! Deleted {int(del_time.seconds / 60000)}m ago")
+            e.set_footer(text=f"sniped!")
             await ctx.send(embed=e)
         else:
             user = self.bot.get_user(snop['user_id'])
@@ -140,7 +140,7 @@ uwu rules. You must follow these or we will take action
             chnl = discord.utils.get(guild.text_channels, id=snop['channel_id'])
             e = discord.Embed(colour=0x7289da, description=snop['message'])
             e.set_author(name=f"{user.name} said in {chnl.name}")
-            e.set_footer(text=f"sniped! Deleted {int(del_time.seconds / 60000)}m ago")
+            e.set_footer(text=f"sniped!")
             await ctx.send(embed=e)
 
     @commands.command(description="Report a bug or user")

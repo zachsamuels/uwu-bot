@@ -80,6 +80,8 @@ class errorhandler:
             await ctx.send(f"{caution} Required argument `{str(error.param).split(':')[0]}` is missing. Ya sure you read the command description?", delete_after=30)
         elif isinstance(error, commands.DisabledCommand):
             await ctx.send(f"{caution} {ctx.command} is disabled.", delete_after=30)
+        elif isinstance(error, commands.BotMissingPermissions):
+            await ctx.send(f"{caution} I need the permission {error.missing_perms[0]}. You can check my role or channel overrides to find permissions.", delete_after=30)
         elif isinstance(error, commands.CommandOnCooldown):
             seconds = error.retry_after
             seconds = round(seconds, 2)

@@ -147,9 +147,11 @@ class uwu(commands.Bot):
 
     async def on_guild_remove(self, guild):
         await self.redis.execute("DECR", "current_guilds")
+        self.logger.info(f"[Guild] Left guild {guild.name}({guild.id}) with {len(guild.members)} members")
 
     async def on_guild_join(self, guild):
         await self.redis.execute("INCR", "current_guilds")
+        self.logger.info(f"[Guild] Joined guild {guild.name}({guild.id}) with {len(guild.members)} members")
 
 if __name__ == "__main__":
     uwu().run()
