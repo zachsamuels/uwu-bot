@@ -58,12 +58,12 @@ class uwu(commands.Bot):
         self.config = yaml.load(open("config.yml"))
         self.pool = None  # pool is unset till the bot is ready
         self.session = aiohttp.ClientSession(loop=self.loop)
-        self.bot_version = '1.0.3 oWo'
         self.process = psutil.Process(os.getpid())
         self.loop = asyncio.get_event_loop()
         self.logger = logging.getLogger('bot')
         self.blacklisted = []
         self.patrons = []
+        self.commands_ran = 0
         self.add_check(self.global_cooldown)
 
     map = commands.CooldownMapping.from_cooldown(1, 4, commands.BucketType.user)
@@ -98,8 +98,6 @@ class uwu(commands.Bot):
     async def on_message(self, message):
         if message.author.bot:
             return
-        if message.content == self.user.mention:
-            return await message.channel.send("I'm uwu! My prefix is `uwu `. For commands do `uwu help`.")
 
         ctx = await self.get_context(message)
 
@@ -128,7 +126,7 @@ class uwu(commands.Bot):
         self.logger.info(f"[Start] Bot started with {len(self.guilds)} guilds and {len(self.users)} users.")
 
     async def on_command_completion(self, ctx):
-        await self.pool.execute("UPDATE commands_used SET commands_used = commands_used + 1;")
+        self.commands_ran =+ 1
 
     async def on_message_delete(self, message):
         content = message.content 

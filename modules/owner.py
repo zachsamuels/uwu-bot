@@ -3,6 +3,8 @@ import discord
 from utils import errorhandler
 import asyncpg
 from datetime import datetime
+import copy
+from typing import Union
 
 class owner:
     def __init__(self, bot):
@@ -53,6 +55,13 @@ class owner:
             return await ctx.send("Done")
         except asyncpg.UniqueViolationError:
             return await ctx.send("User already a patron.", delete_after=30)
+
+    @commands.is_owner()
+    @commands.command()
+    async def die(self, ctx):
+        await self.bot.pool.execute("UPDATE commands_used SET commands_used = commands_used + $1", self.bot.commands_ran)
+        self.bot.logger.info("[Logout] Logging out...")
+        await self.bot.logout()
 
 def setup(bot):
     bot.add_cog(owner(bot))

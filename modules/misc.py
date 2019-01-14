@@ -75,7 +75,7 @@ class misc:
         embed.add_field(name='Uptime',value=f'{days}d {hours}h {minutes}m')
         embed.add_field(name='Servers', value=len(self.bot.guilds))
         embed.add_field(name='Process',value=f'Memory {round(memory_usage, 2)}MiB\nCPU {cpu_usage/cpu_count}%')
-        embed.add_field(name='Bot Usage',value=f'{cmds_used} commands used\n{uwulonian} uwulonians')
+        embed.add_field(name='Bot Usage',value=f'{self.bot.commands_ran} commands used since boot\n{cmds_used + self.bot.commands_ran} commands used\n{uwulonian} uwulonians')
         embed.add_field(name='Members',value=f'{user_count}')
         embed.add_field(name='Links',value='[Invite](https://discordapp.com/oauth2/authorize?client_id=508725128427995136&scope=bot&permissions=67501248) | [Support](https://discord.gg/733URZq) | [Donate](https://www.patreon.com/mellOwO) | [Vote](https://discordbots.org/bot/508725128427995136/vote) | [Website](https://uwu-bot.xyz/)')
         await ctx.send(embed=embed)
