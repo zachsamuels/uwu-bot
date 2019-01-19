@@ -45,7 +45,7 @@ class uwulonian:
         async with self.bot.pool.acquire() as conn:
             uwulonian_name = await conn.fetchrow("SELECT * FROM user_settings INNER JOIN user_stats ON user_settings.user_id = user_stats.user_id WHERE user_settings.user_id = $1 AND user_stats.user_id = $1", ctx.author.id)
             if uwulonian_name is None:
-                return await ctx.uwu!play sigrid high five("You or the user doesn't have an uwulonian created.")
+                return await ctx.caution("You or the user doesn't have an uwulonian created.")
 
             start = time.perf_counter()
             async with self.bot.session.get(ctx.author.avatar_url_as(format='png'), raise_for_status=True) as r:
@@ -65,7 +65,7 @@ class uwulonian:
         try:
             rgb = ImageColor.getrgb(color)
         except ValueError as e:
-            return await ctx.uwu!play sigrid high five("Not a valid color for all valid colors do `uwu color list`.")
+            return await ctx.caution("Not a valid color for all valid colors do `uwu color list`.")
         await self.bot.pool.execute("UPDATE user_settings SET profile_color = $1 WHERE user_id = $2", color, ctx.author.id)
         await ctx.send(f"Set your profile color to `{color}`")
 
