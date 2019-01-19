@@ -57,9 +57,9 @@ class pets:
             all_pets = await conn.fetchval("SELECT COUNT(*) FROM user_pets WHERE user_id = $1", ctx.author.id)
             user_amount = await conn.fetchrow("SELECT uwus FROM user_stats WHERE user_id = $1", ctx.author.id)
             if all_pets >= 3:
-                return await ctx.send("You can only have 3 pets", delete_after=30)
+                return await ctx.caution("You can only have 3 pets")
             if user_amount['uwus'] < 500:
-                return await ctx.send("You don't have enough uwus to adopt a pet. *Hint the amount of dailies gained is enough to adopt*", delete_after=30)
+                return await ctx.caution("You don't have enough uwus to adopt a pet. *Hint the amount of dailies gained is enough to adopt*")
 
             animal = None
             cost = None
@@ -84,12 +84,12 @@ class pets:
                 pet_adopt = await self.bot.wait_for('message', timeout=30, check=check)
             except asyncio.TimeoutError:
                 await pet_embed.delete()
-                return await ctx.send("Adoption timed out", delete_after=30)
+                return await ctx.caution("Adoption timed out")
 
             if pet_adopt.content.lower() == 'cancel':
                 return await ctx.send("Cancelled.")
             if pet_adopt.content not in pet_nums:
-                return await ctx.send("Invalid choice.", delete_after=30)
+                return await ctx.caution("Invalid choice.")
 
             if pet_adopt.content == '1':
                 animal = 'Wolf'
@@ -115,7 +115,7 @@ class pets:
 
             if user_amount['uwus'] < cost:
                 await pet_embed.delete()
-                return await ctx.send("You can't afford this pet.", delete_after=30)
+                return await ctx.caution("You can't afford this pet.")
 
             await conn.execute("INSERT INTO user_pets (user_id, pet_name, pet_type, gender) VALUES ($1, $2, $3, $4)", ctx.author.id, animal, animal, gender)
             await conn.execute("UPDATE user_stats SET uwus = user_stats.uwus - $1 WHERE user_id = $2", cost, ctx.author.id)
@@ -128,11 +128,11 @@ class pets:
             all_pets = await conn.fetchval("SELECT COUNT(*) FROM spc_user_pets WHERE user_id = $1", ctx.author.id)
             user_amount = await conn.fetchrow("SELECT uwus, current_level FROM user_stats WHERE user_id = $1", ctx.author.id)
             if all_pets >= 2:
-                return await ctx.send("You can't have more then 2 special pets", delete_after=30)
+                return await ctx.caution("You can't have more then 2 special pets")
             if user_amount['current_level'] < 10:
-                return await ctx.send("You must be higher then level 10 to adopt a special pet", delete_after=30)
+                return await ctx.caution("You must be higher then level 10 to adopt a special pet")
             if user_amount['uwus'] < 500:
-                return await ctx.send("You don't have enough uwus to adopt a pet. *Hint the amount of dailies gained is enough to adopt*", delete_after=30)
+                return await ctx.caution("You don't have enough uwus to adopt a pet. *Hint the amount of dailies gained is enough to adopt*")
 
             animal = None
             cost = None
@@ -157,12 +157,12 @@ class pets:
                 pet_adopt = await self.bot.wait_for('message', timeout=30, check=check)
             except asyncio.TimeoutError:
                 await pet_embed.delete()
-                return await ctx.send("Adoption timed out", delete_after=30)
+                return await ctx.caution("Adoption timed out")
 
             if pet_adopt.content.lower() == 'cancel':
-                return await ctx.send("Cancelled.", delete_after=30)
+                return await ctx.caution("Cancelled.")
             if pet_adopt.content not in pet_nums:
-                return await ctx.send("Invalid choice.", delete_after=30)
+                return await ctx.caution("Invalid choice.")
 
             if pet_adopt.content == '1':
                 animal = 'Tiger'
@@ -197,7 +197,7 @@ class pets:
                 pets = await conn.fetch("SELECT * FROM user_pets WHERE user_id = $1", ctx.author.id)
 
             if pets is None:
-                return await ctx.send("You have no pets", delete_after=30)
+                return await ctx.caution("You have no pets")
             e = discord.Embed(colour=0x7289da)
             if special is not None:
                 e.set_author(name=f"{ctx.author.name}'s special pets")
@@ -226,7 +226,7 @@ class pets:
                 return await ctx.send("Do `uwu pets` to find your pets to cuddles with. You need to do `uwu cuddle ID` replace ID with the pets ID.")
             pets = await conn.fetch("SELECT user_id, pet_id FROM user_pets WHERE user_id = $1 AND pet_id = $2", ctx.author.id, pet)
             if not pets:
-                return await ctx.send("You don't have that pet or it's special.", delete_after=30)
+                return await ctx.caution("You don't have that pet or it's special.")
             user_cooldown = await self.bot.redis.pttl(f"{ctx.author.id}-{ctx.command.qualified_name}-{pet}")
             if user_cooldown == -2:
                 await self.bot.redis.execute("SET", f"{ctx.author.id}-{ctx.command.qualified_name}-{pet}", "cooldown", "EX", 3600)
@@ -250,7 +250,7 @@ class pets:
                 seconds = round(base_time, 2)
                 hours, remainder = divmod(int(seconds), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"{caution} You can't cuddle that pet for `{hours}`h `{minutes}`m `{seconds}`sec", delete_after=30)
+                await ctx.send(f"You can't cuddle that pet for `{hours}`h `{minutes}`m `{seconds}`sec", delete_after=30)
 
     @commands.command(description="Cuddles with your pet", aliases=['playy'])
     async def play(self, ctx, pet: int = None):
@@ -259,7 +259,7 @@ class pets:
                 return await ctx.send("Do `uwu pets special` to find your pets to play with. You need to do `uwu play ID` replace ID with the pets ID.")
             pets = await conn.fetch("SELECT user_id, pet_id FROM spc_user_pets WHERE user_id = $1 AND pet_id = $2", ctx.author.id, pet)
             if not pets:
-                return await ctx.send("You don't have that pet or it isn't special.", delete_after=30)
+                return await ctx.caution("You don't have that pet or it isn't special.")
             user_cooldown = await self.bot.redis.pttl(f"{ctx.author.id}-{ctx.command.qualified_name}")
             if user_cooldown == -2:
                 await self.bot.redis.execute("SET", f"{ctx.author.id}-{ctx.command.qualified_name}", "cooldown", "EX",7200)
@@ -289,7 +289,7 @@ RETURNING True;""", pet, item)
                 seconds = round(base_time, 2)
                 hours, remainder = divmod(int(seconds), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"{caution} You can't play again for `{hours}`h `{minutes}`m `{seconds}`sec", delete_after=30)
+                await ctx.caution(f"You can't play again for `{hours}`h `{minutes}`m `{seconds}`sec")
 
     @commands.group(invoke_without_command=True, description="Does nothing without a subcommand")
     async def booster(self, ctx):
@@ -299,9 +299,9 @@ RETURNING True;""", pet, item)
     async def list(self, ctx, pet: int = None):
         boosters = await self.bot.pool.fetch("SELECT booster_name FROM pet_boosters WHERE pet_id = $1", pet)
         if pet is None:
-            return await ctx.send("Do `uwu pets special` to find your sepcial pets. You need to do `uwu booster list ID` replace ID with the pets ID.", delete_after=30)
+            return await ctx.caution("Do `uwu pets special` to find your sepcial pets. You need to do `uwu booster list ID` replace ID with the pets ID.")
         if not boosters:
-            return await ctx.send("You don't have any boosters or you don't have any special pets.", delete_after=30)
+            return await ctx.caution("You don't have any boosters or you don't have any special pets.")
         list_boosters = []
         for i in range(len(boosters)):
             list_boosters.append(boosters[i]['booster_name'])
@@ -316,9 +316,9 @@ RETURNING True;""", pet, item)
                                              7)
                 boosters = await conn.fetchrow("SELECT booster_name FROM pet_boosters WHERE pet_id = $1", pet)
                 if pet is None:
-                    return await ctx.send("Do `uwu pets special` to find your sepcial pets. You need to do `uwu booster sell ID` replace ID with the pets ID.", delete_after=30)
+                    return await ctx.caution("Do `uwu pets special` to find your sepcial pets. You need to do `uwu booster sell ID` replace ID with the pets ID.")
                 if boosters is None:
-                    return await ctx.send("You don't have any boosters or you don't have any special pets.", delete_after=30)
+                    return await ctx.caution("You don't have any boosters or you don't have any special pets.")
 
                 e = discord.Embed(color=0x7289da, description=f"Welcome to uwus shop! Here you can sell your boosters. The uwus/xp earned for selling each booster is listed below! Reply with the number of the booster you would like to sell.")
                 e.set_author(name="Sell your boosters!")
@@ -340,12 +340,12 @@ RETURNING True;""", pet, item)
                     sell_booster = await self.bot.wait_for('message', timeout=30, check=check)
                 except asyncio.TimeoutError:
                     await list_embed.delete()
-                    return await ctx.send("Sell timed out", delete_after=30)
+                    return await ctx.caution("Sell timed out")
 
                 booster_nums = ['1', '2', '3', '4', '5', '6']
                 if sell_booster.content not in booster_nums:
                     await list_embed.delete()
-                    return await ctx.send("Invalid number.", delete_after=30)
+                    return await ctx.caution("Invalid number.")
 
                 if sell_booster.content == '1':
                     uwus = 100
@@ -370,7 +370,7 @@ RETURNING True;""", pet, item)
                 del_conf = await conn.fetchval("DELETE FROM pet_boosters WHERE booster_id = (SELECT booster_id FROM pet_boosters WHERE pet_id = $1 AND booster_name = $2 LIMIT 1) AND pet_id = $1 RETURNING True",
                     pet, option)
                 if not del_conf:
-                    return await ctx.send(f"You don't have a {option} booster.", delete_after=30)
+                    return await ctx.caution(f"You don't have a {option} booster.")
                 if xp_from:
                     await conn.execute("UPDATE user_stats SET uwus = user_stats.uwus + $1, current_xp = user_stats.current_xp + $2 WHERE user_id = $3", uwus, xp_from, ctx.author.id)
                     await list_embed.delete()
@@ -386,8 +386,7 @@ RETURNING True;""", pet, item)
                 hours, remainder = divmod(int(seconds), 3600)
                 minutes, seconds = divmod(remainder, 60)
 
-                await ctx.send(f"{caution} You can't sell a booster again for `{hours}`h `{minutes}`m `{seconds}`sec",
-                               delete_after=30)
+                await ctx.caution(f"You can't sell a booster again for `{hours}`h `{minutes}`m `{seconds}`sec")
 
     @booster.command()
     async def activate(self, ctx, pet: int = None, *, booster_type=None):
@@ -395,10 +394,9 @@ RETURNING True;""", pet, item)
             boosters_1 = await conn.fetchrow(
                 "SELECT pet_name, pet_id FROM spc_user_pets WHERE user_id = $1 AND pet_id = $2", ctx.author.id, pet)
             if pet is None:
-                return await ctx.send("Do `uwu pets special` to see the special pets you have.", delete_after=30)
+                return await ctx.caution("Do `uwu pets special` to see the special pets you have.")
             if boosters_1 is None:
-                return await ctx.send("You don't have any boosters or you don't have any special pets.",
-                                      delete_after=30)
+                return await ctx.caution("You don't have any boosters or you don't have any special pets.")
             boosters = ['2x XP', '2x uwus', '3x XP', '3x uwus', '4x XP', '5x XP']
             boosters_lower = ['2x xp', '2x uwus', '3x xp', '3x uwus', '4x xp', '5x xp']
             if booster_type is None or booster_type.lower() not in boosters_lower:
@@ -427,7 +425,7 @@ RETURNING True;""", pet, item)
                     boost_type = 'XP'
                 del_conf = await conn.fetchval("DELETE FROM pet_boosters WHERE booster_id = (SELECT booster_id FROM pet_boosters WHERE pet_id = $1 AND booster_name = $2 LIMIT 1) AND pet_id = $1 RETURNING True", pet, booster_type)
                 if not del_conf:
-                    return await ctx.send(f"You don't have a {booster_type} booster.", delete_after=30)
+                    return await ctx.caution(f"You don't have a {booster_type} booster.")
                 end_time = datetime.utcnow() + timedelta(days=1)
                 await conn.execute("""INSERT INTO user_boosters (pet_id, active_boosters, boost_amount, boost_type, user_id, expire_time) 
 VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (pet_id) DO UPDATE SET pet_id = $1, active_boosters = $2, boost_amount = $3, boost_type = $4, user_id = $5, expire_time = $6""",
@@ -439,7 +437,7 @@ pet, booster_type, boost_amount, boost_type, ctx.author.id, end_time)
             seconds = round(hu_time_left, 2)
             hours, remainder = divmod(hu_time_left, 3600)
             minutes, seconds = divmod(remainder, 60)
-            return await ctx.send(f"You already have a {booster_left['active_boosters']}. It ends in `{int(hours)}`h `{int(minutes)}`m `{int(seconds)}`sec", delete_after=30)
+            return await ctx.caution(f"You already have a {booster_left['active_boosters']}. It ends in `{int(hours)}`h `{int(minutes)}`m `{int(seconds)}`sec")
 
 
 def setup(bot):

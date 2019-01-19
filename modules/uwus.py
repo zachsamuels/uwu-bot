@@ -38,7 +38,7 @@ class uwus:
                 return await ctx.send("You don't have the funds to bet that much", delete_after=30)
 
             status = await ctx.send("Flipping the coin...")
-            await asyncio.sleep(3)
+            await asyncio.sleep(2)
             await status.delete()
             side = secrets.choice(["heads", "tails"])
             if side == "heads":
@@ -66,7 +66,7 @@ class uwus:
             return await ctx.send("You can only play guessing game if you are in a server with more then 15 members. Join uwus support server if you want to play but don't have 15 members.", delete_after=30)
         async with self.bot.pool.acquire() as conn:
             if ctx.channel.id in self.active_games:
-                return await ctx.send("There is already a guessing game in this channel.", delete_after=30)
+                return await ctx.caution("There is already a guessing game in this channel.")
             self.active_games.append(ctx.channel.id)
             e = discord.Embed(description=
 """
@@ -92,7 +92,7 @@ You have 30 seconds to guess! Good luck!
                 return await ctx.send(f"Times up! The user was {randmem.name}.".replace('@','@\u200b'))
 
             amount = 50
-            booster = await conn.fetchrow("SELECT boost_type, boost_amount, active_boosters FROM user_boosters WHERE user_id = $1", ctx.author.id)
+            booster = await conn.fetchrow("SELECT boost_type, boost_amount, active_boosters FROM user_boosters WHERE user_id = $1", name.author.id)
             if not booster or booster['boost_type'] == 'XP':
                 status = await conn.fetchrow("UPDATE user_stats SET uwus = user_stats.uwus + $1 WHERE user_id = $2 RETURNING True", amount, name.author.id)
                 if status:
@@ -115,15 +115,15 @@ You have 30 seconds to guess! Good luck!
         async with self.bot.pool.acquire() as conn:
             user_amount = await conn.fetchrow("SELECT uwus FROM user_stats WHERE user_id = $1", ctx.author.id)
             if await conn.fetchrow("SELECT user_id FROM user_settings WHERE user_id = $1 OR user_id = $2", ctx.author.id, user.id) is None:
-                return await ctx.send("You or the user don't have an uwulonian.")
+                return await ctx.caution("You or the user don't have an uwulonian.")
             if ctx.author.id == user.id:
-                return await ctx.send("You can't give yourself uwus.", delete_after=30)
+                return await ctx.caution("You can't give yourself uwus.")
             if amount < 50:
-                return await ctx.send("You can't give less than `50` uwus.", delete_after=30)
+                return await ctx.caution("You can't give less than `50` uwus.")
             if amount > 50000:
-                return await ctx.send("You can't give more then `50000` uwus", delete_after=30)
+                return await ctx.caution("You can't give more then `50000` uwus")
             if amount > user_amount['uwus']:
-                return await ctx.send("You don't have the funds to give that much", delete_after=30)
+                return await ctx.caution("You don't have the funds to give that much")
 
             await conn.execute("UPDATE user_stats SET uwus = user_stats.uwus - $1 WHERE user_id = $2", amount, ctx.author.id)
             await conn.execute("UPDATE user_stats SET uwus = user_stats.uwus + $1 WHERE user_id = $2", amount, user.id)

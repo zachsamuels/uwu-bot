@@ -36,27 +36,27 @@ def has_voted():
 
 class NotPatron(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"{caution} You are not a Patron. You can become one here <https://www.patreon.com/mellOwO>")
+        super().__init__(f"You are not a Patron. You can become one here <https://www.patreon.com/mellOwO>")
 
 class IsStaff(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"{caution} This is a staff only command.")
+        super().__init__(f"This is a staff only command.")
 
 class isEvent(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"{caution} This is an event staff only command.")
+        super().__init__(f"This is an event staff only command.")
 
 class hasUwU(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"{caution} You need an uwulonian for this command.")
+        super().__init__(f"You need an uwulonian for this command.")
 
 class hasVoted(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"{caution} You haven't voted. You can vote here <https://discordbots.org/bot/508725128427995136/vote>. If you voted give me a few seconds to register it.")
+        super().__init__(f"You haven't voted. You can vote here <https://discordbots.org/bot/508725128427995136/vote>. If you voted give me a few seconds to register it.")
 
 class isBeta(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"{caution} This is a beta-server only command.")
+        super().__init__(f"This is a beta-server only command.")
 
 class errorhandler:
     def __init__(self, bot):
@@ -71,25 +71,25 @@ class errorhandler:
         error = getattr(error, 'original', error)
 
         if isinstance(error, errors):
-            await ctx.send(error, delete_after=30)
+            await ctx.caution(error)
         elif isinstance(error, commands.BadArgument):
-            await ctx.send(f"{caution} Invalid argument. Did you type it correct?", delete_after=30)
+            await ctx.caution(f"Invalid argument. Did you type it correct?")
         elif isinstance(error, commands.TooManyArguments):
-            await ctx.send(f"{caution} Too many arguments. Try less?", delete_after=30)
+            await ctx.caution(f"Too many arguments. Try less?")
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(f"{caution} Required argument `{str(error.param).split(':')[0]}` is missing. Ya sure you read the command description?", delete_after=30)
+            await ctx.caution(f"Required argument `{str(error.param).split(':')[0]}` is missing. Ya sure you read the command description?")
         elif isinstance(error, commands.DisabledCommand):
-            await ctx.send(f"{caution} {ctx.command} is disabled.", delete_after=30)
+            await ctx.caution(f"{ctx.command} is disabled.")
         elif isinstance(error, commands.BotMissingPermissions):
-            await ctx.send(f"{caution} I need the permission {error.missing_perms[0]}. You can check my role or channel overrides to find permissions.", delete_after=30)
+            await ctx.caution(f"I need the permission {error.missing_perms[0]}. You can check my role or channel overrides to find permissions.")
         elif isinstance(error, commands.CommandOnCooldown):
             seconds = error.retry_after
             seconds = round(seconds, 2)
             hours, remainder = divmod(int(seconds), 3600)
             minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"{caution} You are on cooldown for `{hours}`h `{minutes}`m `{seconds}`sec", delete_after=30)
+            await ctx.caution(f"You are on cooldown for `{hours}`h `{minutes}`m `{seconds}`sec")
         elif isinstance(error, c_errors):
-            return await ctx.send(error, delete_after=30)
+            return await ctx.caution(error)
         else:
             print(error)
 

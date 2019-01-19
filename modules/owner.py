@@ -61,6 +61,7 @@ class owner:
     async def die(self, ctx):
         await self.bot.pool.execute("UPDATE commands_used SET commands_used = commands_used + $1", self.bot.commands_ran)
         self.bot.logger.info("[Logout] Logging out...")
+        await ctx.send("Bye cruel world...")
         await self.bot.logout()
 
 def setup(bot):

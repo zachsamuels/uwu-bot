@@ -14,6 +14,8 @@ import aioredis
 import psutil
 import discord
 import logging.handlers
+import lavalink
+import utils
 
 logger = logging.getLogger('bot')
 logger.setLevel(logging.INFO)
@@ -53,7 +55,7 @@ prefixes = ['uwu ', '|']
 
 class uwu(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or(*prefixes), case_insensitive=True, description=description, reconnect=True)
+        super().__init__(command_prefix=commands.when_mentioned_or(*prefixes), case_insensitive=True, description=description, reconnect=True, status=discord.Status.idle, activity=discord.Game("Booting up"))
         self.launch_time = datetime.utcnow()
         self.config = yaml.load(open("config.yml"))
         self.pool = None  # pool is unset till the bot is ready
@@ -88,7 +90,7 @@ class uwu(commands.Bot):
 
     async def create_pool(self):
         credentials = {"user": self.config['dbuser'], "password": self.config['dbpassword'],"database": self.config['dbname'], "host": "127.0.0.1"}
-        self.pool = await asyncpg.create_pool(**credentials, max_size=100)
+        self.pool = await asyncpg.create_pool(**credentials, max_size=150)
 
     async def on_message_edit(self, before, after):
         if after.author.bot:
@@ -105,7 +107,7 @@ class uwu(commands.Bot):
             if message.author.id in self.blacklisted:
                 return await message.channel.send(f"You may not use uwu. You were blacklisted.")
 
-            await self.invoke(ctx)
+            await self.process_commands(message)
 
     async def on_ready(self):
         await self.create_pool()
@@ -126,7 +128,16 @@ class uwu(commands.Bot):
         self.logger.info(f"[Start] Bot started with {len(self.guilds)} guilds and {len(self.users)} users.")
 
     async def on_command_completion(self, ctx):
-        self.commands_ran =+ 1
+        self.commands_ran += 1
+
+
+    async def process_commands(self, message):
+        ctx = await self.get_context(message, cls=utils.context.Context)
+
+        if ctx.command is None:
+            return
+
+        await self.invoke(ctx)
 
     async def on_message_delete(self, message):
         content = message.content 

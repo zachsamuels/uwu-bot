@@ -118,13 +118,13 @@ xp {rows['current_xp'] + xp} (Hint: You need {(rows['current_level'] + 1) * 1500
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.send(f"Your uwulonian is already exploring. Will return in `{minutes}`m `{int(seconds)}`sec", delete_after=30)
+                return await ctx.caution(f"Your uwulonian is already exploring. It will return in `{minutes}`m `{int(seconds)}`sec.")
             if adventure:
                 time_left = adventure['finish_time'] - datetime.utcnow()
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.send(f"Your uwulonian is already adventuring. Will return in `{minutes}`m `{int(seconds)}`sec", delete_after=30)
+                return await ctx.caution(f"Your uwulonian is already adventuring. It will return in `{minutes}`m `{int(seconds)}`sec.")
             end_time = datetime.utcnow() + timedelta(minutes=30)
             await conn.execute("INSERT INTO user_explores (user_id, finish_time) VALUES ($1, $2)", ctx.author.id, end_time)
             guild = self.bot.get_guild(513888506498646052)
@@ -135,7 +135,7 @@ f"""```ini
 User {ctx.author}({ctx.author.id})
 Time {datetime.utcnow().strftime("%X on %x")}```
 """)
-            await ctx.send(f"Your uwulonian is now exploring! Will return in 30 minutes")
+            await ctx.send(f"Your uwulonian is now exploring! It will return in 30 minutes")
 
     @commands.command(description="Set your uwulonian on an adventure", aliases=['adv'])
     async def adventure(self, ctx):
@@ -147,13 +147,13 @@ Time {datetime.utcnow().strftime("%X on %x")}```
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.send(f"Your uwulonian is already exploring. Will return in `{int(minutes)}`m `{int(seconds)}`sec", delete_after=30)
+                return await ctx.caution(f"Your uwulonian is already exploring. It will return in `{int(minutes)}`m `{int(seconds)}`sec.")
             if adventure:
                 time_left = adventure['finish_time'] - datetime.utcnow()
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.send(f"Your uwulonian is already adventuring. Will return in `{int(minutes)}`m `{int(seconds)}`sec", delete_after=30)
+                return await ctx.caution(f"Your uwulonian is already adventuring. It will return in `{int(minutes)}`m `{int(seconds)}`sec.")
             end_time = datetime.utcnow() + timedelta(hours=1)
             await conn.execute("INSERT INTO user_adventures (user_id, finish_time) VALUES ($1, $2)", ctx.author.id, end_time)
             guild = self.bot.get_guild(513888506498646052)
@@ -164,7 +164,7 @@ f"""```ini
 User {ctx.author}({ctx.author.id})
 Time {datetime.utcnow().strftime("%X on %x")}```
 """)
-            await ctx.send(f"Your uwulonian is now adventuring! Will return in 1 hour")
+            await ctx.send(f"Your uwulonian is now adventuring! It will return in 1 hour")
 
 def setup(bot):
     bot.add_cog(exploring(bot))

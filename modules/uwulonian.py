@@ -45,7 +45,7 @@ class uwulonian:
         async with self.bot.pool.acquire() as conn:
             uwulonian_name = await conn.fetchrow("SELECT * FROM user_settings INNER JOIN user_stats ON user_settings.user_id = user_stats.user_id WHERE user_settings.user_id = $1 AND user_stats.user_id = $1", ctx.author.id)
             if uwulonian_name is None:
-                return await ctx.send("You or the user doesn't have an uwulonian created.", delete_after=30)
+                return await ctx.uwu!play sigrid high five("You or the user doesn't have an uwulonian created.")
 
             start = time.perf_counter()
             async with self.bot.session.get(ctx.author.avatar_url_as(format='png'), raise_for_status=True) as r:
@@ -65,7 +65,7 @@ class uwulonian:
         try:
             rgb = ImageColor.getrgb(color)
         except ValueError as e:
-            return await ctx.send("Not a valid color for all valid colors do `uwu color list`.", delete_after=30)
+            return await ctx.uwu!play sigrid high five("Not a valid color for all valid colors do `uwu color list`.")
         await self.bot.pool.execute("UPDATE user_settings SET profile_color = $1 WHERE user_id = $2", color, ctx.author.id)
         await ctx.send(f"Set your profile color to `{color}`")
 
@@ -95,7 +95,7 @@ class uwulonian:
             user = user or ctx.author
             uwulonian_name = await conn.fetchrow("SELECT * FROM user_settings INNER JOIN user_stats ON user_settings.user_id = user_stats.user_id WHERE user_settings.user_id = $1 AND user_stats.user_id = $1", user.id)
             if uwulonian_name is None:
-                return await ctx.send("You or the user doesn't have an uwulonian created.", delete_after=30)
+                return await ctx.caution("You or the user doesn't have an uwulonian created.")
             roles = "Yes"
             is_patron = await conn.fetchrow("SELECT * FROM p_users WHERE user_id = $1", user.id)
             if is_patron is None:
@@ -114,7 +114,7 @@ class uwulonian:
         sorts = ["deaths", "foes", "uwus", "xp", "level"]
         new_sort = None
         if sort is None or sort.lower() not in sorts:
-            return await ctx.send(f"Invalid type. Valid `deaths, foes, uwus, xp, and level`", delete_after=30)
+            return await ctx.caution(f"Invalid type. Valid `deaths, foes, uwus, xp, and level`")
         if sort.lower() == "deaths":
             new_sort = "total_deaths"
         elif sort.lower() == "foes":
@@ -143,9 +143,9 @@ class uwulonian:
             uwus_needed = new_level * 500
             xp_needed = new_level * 1500
             if new_level * 1500 > user['current_xp']:
-                return await ctx.send(f"You don't have enough xp to level up to level {new_level}. (Hint: you need {xp_needed} xp to level up)", delete_after=30)
+                return await ctx.caution(f"You don't have enough xp to level up to level {new_level}. (Hint: you need {xp_needed} xp to level up)")
             if new_level * 500 > user['uwus']:
-                return await ctx.send(f"You don't have enough uwus to level up to level {new_level}. (Hint: you need {uwus_needed} uwus to level up)", delete_after=30)
+                return await ctx.caution(f"You don't have enough uwus to level up to level {new_level}. (Hint: you need {uwus_needed} uwus to level up)")
 
             await conn.execute("""UPDATE user_stats SET uwus = user_stats.uwus - $1, current_xp = user_stats.current_xp - $2, current_level = $3 
             WHERE user_id = $4""", uwus_needed, xp_needed, new_level, ctx.author.id)

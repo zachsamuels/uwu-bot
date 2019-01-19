@@ -65,7 +65,7 @@ class marriage:
     async def marriage(self, ctx):
         married = await self.bot.pool.fetchrow("SELECT user1_id, user2_id, time_married FROM marriages WHERE user1_id = $1 OR user2_id = $1", ctx.author.id)
         if married is None:
-            return await ctx.send("You are not married.", delete_after=30)
+            return await ctx.caution("You are not married.")
 
         if married['user1_id'] == ctx.author.id:
             user = self.bot.get_user(married['user2_id'])
@@ -81,9 +81,9 @@ class marriage:
             children = await conn.fetchval("SELECT COUNT(*) FROM children WHERE lover1_id = $1 OR lover2_id = $1", ctx.author.id)
             marriage = await conn.fetchrow("SELECT user1_id, user2_id FROM marriages WHERE user1_id = $1 OR user2_id = $1", ctx.author.id)
             if marriage is None:
-                return await ctx.send("You aren't married", delete_after=30)
+                return await ctx.caution("You aren't married")
             if children >= 5:
-                return await ctx.send("You already have 5 children. Are you crazy wanting more?", delete_after=30)
+                return await ctx.caution("You already have 5 children. Are you crazy wanting more?")
 
             if marriage['user1_id'] == ctx.author.id:
                 user = self.bot.get_user(marriage['user2_id'])
@@ -126,7 +126,7 @@ class marriage:
 
                     if len(baby_name.content) < 3 or len(baby_name.content) > 50:
                         await self.bot.redis.execute("DEL", f"{ctx.author.id}-{ctx.command.qualified_name}")
-                        return await ctx.send("The name must be more then 3 chars long and can't be longer then 50 chars.", delete_after=30)
+                        return await ctx.caution("The name must be more then 3 chars long and can't be longer then 50 chars.")
 
                     await self.bot.pool.execute("INSERT INTO children (lover1_id, lover2_id, child_name, age, gender) VALUES ($1, $2, $3, $4, $5)", ctx.author.id, user.id, baby_name.content, 0, gender)
                     await congrats.delete()
@@ -139,7 +139,7 @@ class marriage:
 
             await asking.delete()
             await self.bot.redis.execute("DEL", f"{ctx.author.id}-{ctx.command.qualified_name}")
-            await ctx.send("Invalid choice. Did you type it properly?", delete_after=30)
+            await ctx.caution("Invalid choice. Did you type it properly?")
 
     @commands.command(description='Check your family')
     async def family(self, ctx):
@@ -147,7 +147,7 @@ class marriage:
             children = await conn.fetch("SELECT * FROM children WHERE lover1_id = $1 OR lover2_id = $1", ctx.author.id)
             marriage = await conn.fetchrow("SELECT user1_id, user2_id, time_married FROM marriages WHERE user1_id = $1 OR user2_id = $1", ctx.author.id)
             if marriage is None:
-                return await ctx.send("You aren't married", delete_after=30)
+                return await ctx.caution("You aren't married")
 
             if marriage['user1_id'] == ctx.author.id:
                 user = self.bot.get_user(marriage['user2_id'])
@@ -171,12 +171,12 @@ class marriage:
         async with self.bot.pool.acquire() as conn:
             children = await conn.fetchrow("SELECT child_name, age, gender, last_bd FROM children WHERE lover1_id = $1 OR lover2_id = $1 ORDER BY RANDOM() LIMIT 1", ctx.author.id)
             if children is None:
-                return await ctx.send("You have no children.", delete_after=30)
+                return await ctx.caution("You have no children.")
             user_cooldown = await ctx.bot.redis.pttl(f"{ctx.author.id}-{ctx.command.qualified_name}-{children['child_name']}")
             if user_cooldown == -2:
                 marriage = await conn.fetchrow("SELECT user1_id, user2_id, time_married FROM marriages WHERE user1_id = $1 OR user2_id = $1", ctx.author.id)
                 if marriage is None:
-                    return await ctx.send("You aren't married.", delete_after=30)
+                    return await ctx.caution("You aren't married.")
 
                 await self.bot.redis.execute("SET", f"{ctx.author.id}-{ctx.command.qualified_name}-{children['child_name']}", "cooldown", "EX", 2630000)
                 gender = 'He'
@@ -196,7 +196,7 @@ class marriage:
                 seconds = round(base_time, 2)
                 hours, remainder = divmod(int(seconds), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"{caution} {children['child_name']} already had there birthday within the last month", delete_after=30)
+                await ctx.caution(f"{children['child_name']} already had there birthday within the last month")
 
 
 def setup(bot):
