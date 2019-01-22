@@ -17,52 +17,74 @@ import logging.handlers
 import lavalink
 import utils
 
-logger = logging.getLogger('bot')
+logger = logging.getLogger("bot")
 logger.setLevel(logging.INFO)
-handler = logging.handlers.TimedRotatingFileHandler(filename=f'logs/bot.log', encoding='utf-8', when="D", interval=1, utc=True, backupCount=10)
-handler.setFormatter(logging.Formatter('[%(asctime)s:%(levelname)s:%(name)s] %(message)s'))
+handler = logging.handlers.TimedRotatingFileHandler(
+    filename=f"logs/bot.log",
+    encoding="utf-8",
+    when="D",
+    interval=1,
+    utc=True,
+    backupCount=10,
+)
+handler.setFormatter(
+    logging.Formatter("[%(asctime)s:%(levelname)s:%(name)s] %(message)s")
+)
 logger.addHandler(handler)
 
 try:
     import uvloop
 except ImportError:
-    if sys.platform == "linux":  # alert the user to install uvloop if they are on a linux system
+    if (
+        sys.platform == "linux"
+    ):  # alert the user to install uvloop if they are on a linux system
         print("UVLoop not detected")
 else:
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
 description = """uwu. A RPG bot made by mellowmarshe#0001"""
 
-startup_extensions = ['jishaku',
-                      'utils.errorhandler',
-                      'modules.create',
-                      'modules.exploring',
-                      'modules.owner',
-                      'modules.uwulonian',
-                      'modules.misc',
-                      'modules.patron',
-                      'modules.DBL',
-                      'modules.marriage',
-                      'modules.uwus',
-                      'modules.events',
-                      'modules.daily',
-                      'modules.pets',
-                      'modules.help',
-                      'modules.votes',
-                      'modules.logging']
+startup_extensions = [
+    "jishaku",
+    "utils.errorhandler",
+    "modules.create",
+    "modules.exploring",
+    "modules.owner",
+    "modules.uwulonian",
+    "modules.misc",
+    "modules.patron",
+    "modules.DBL",
+    "modules.marriage",
+    "modules.uwus",
+    "modules.events",
+    "modules.daily",
+    "modules.pets",
+    "modules.help",
+    "modules.votes",
+    "modules.logging",
+    "modules.music",
+]
 
-prefixes = ['uwu ', '|']
+prefixes = ["uwu ", "|"]
+
 
 class uwu(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=commands.when_mentioned_or(*prefixes), case_insensitive=True, description=description, reconnect=True, status=discord.Status.idle, activity=discord.Game("Booting up"))
+        super().__init__(
+            command_prefix=commands.when_mentioned_or(*prefixes),
+            case_insensitive=True,
+            description=description,
+            reconnect=True,
+            status=discord.Status.idle,
+            activity=discord.Game("Booting up"),
+        )
         self.launch_time = datetime.utcnow()
         self.config = yaml.load(open("config.yml"))
         self.pool = None  # pool is unset till the bot is ready
         self.session = aiohttp.ClientSession(loop=self.loop)
         self.process = psutil.Process(os.getpid())
         self.loop = asyncio.get_event_loop()
-        self.logger = logging.getLogger('bot')
+        self.logger = logging.getLogger("bot")
         self.blacklisted = []
         self.patrons = []
         self.commands_ran = 0
@@ -80,17 +102,12 @@ class uwu(commands.Bot):
             return True
 
     async def start(self):
-        await self.create_pool()
         for ext in startup_extensions:
             try:
                 self.load_extension(ext)
             except BaseException as e:
                 print(f"Failed to load {ext}\n{type(e).__name__}: {e}")
-        await super().start(self.config['token'])
-
-    async def create_pool(self):
-        credentials = {"user": self.config['dbuser'], "password": self.config['dbpassword'],"database": self.config['dbname'], "host": "127.0.0.1"}
-        self.pool = await asyncpg.create_pool(**credentials, max_size=150)
+        await super().start(self.config["token"])
 
     async def on_message_edit(self, before, after):
         if after.author.bot:
@@ -105,31 +122,60 @@ class uwu(commands.Bot):
 
         if ctx.command:
             if message.author.id in self.blacklisted:
-                return await message.channel.send(f"You may not use uwu. You were blacklisted.")
+                return await message.channel.send(
+                    f"You may not use uwu. You were blacklisted."
+                )
 
             await self.process_commands(message)
 
+    async def init_conns(self):
+        await self.init_dbs()
+        await self.init_ll()
+
+    async def init_dbs(self):
+        self.redis = await aioredis.create_redis_pool(
+            "redis://localhost",
+            password=self.config["redispassword"],
+            minsize=5,
+            maxsize=10,
+            loop=self.loop,
+        )
+        credentials = {
+            "user": self.config["dbuser"],
+            "password": self.config["dbpassword"],
+            "database": self.config["dbname"],
+            "host": "127.0.0.1",
+        }
+        self.pool = await asyncpg.create_pool(**credentials, max_size=150)
+
+    async def init_ll(self):
+        self.lavalink = lavalink.Client(self.user.id)
+        self.lavalink.add_node(
+            self.config["lavalink_ip"], 8080, self.config["lavalink"], "us", "us-east"
+        )
+        self.add_listener(self.lavalink.voice_update_handler, "on_socket_response")
+
     async def on_ready(self):
-        await self.create_pool()
-        self.redis = await aioredis.create_redis_pool('redis://localhost', password=self.config['redispassword'], minsize=5, maxsize=10, loop=self.loop)
+        await self.init_conns()
         with open("utils/schema.sql") as f:
             await self.pool.execute(f.read())
         print("Bot ready!")
         bl_users = await self.pool.fetch("SELECT * FROM blacklists")
         patrons = await self.pool.fetch("SELECT * FROM p_users")
         for i in range(len(bl_users)):
-            self.blacklisted.append(bl_users[i]['user_id'])
+            self.blacklisted.append(bl_users[i]["user_id"])
         self.logger.info(f"[Start] Blacklisted users added.")
         for i in range(len(patrons)):
-            self.patrons.append(patrons[i]['user_id'])
+            self.patrons.append(patrons[i]["user_id"])
         self.logger.info(f"[Start] Patrons added.")
         game = discord.Game("with fwends")
         await self.change_presence(status=discord.Status.dnd, activity=game)
-        self.logger.info(f"[Start] Bot started with {len(self.guilds)} guilds and {len(self.users)} users.")
+        self.logger.info(
+            f"[Start] Bot started with {len(self.guilds)} guilds and {len(self.users)} users."
+        )
 
     async def on_command_completion(self, ctx):
         self.commands_ran += 1
-
 
     async def process_commands(self, message):
         ctx = await self.get_context(message, cls=utils.context.Context)
@@ -140,7 +186,7 @@ class uwu(commands.Bot):
         await self.invoke(ctx)
 
     async def on_message_delete(self, message):
-        content = message.content 
+        content = message.content
         msg_type_o = 0
         if message.attachments:
             content = message.attachments[0].proxy_url
@@ -149,18 +195,30 @@ class uwu(commands.Bot):
             content = message.embeds[0].description
             msg_type_o = 2
         try:
-            await self.pool.execute("""INSERT INTO del_snipe (guild_id, user_id, channel_id, message, msg_type) VALUES ($1, $2, $3, $4, $5) 
-            ON CONFLICT (channel_id) DO UPDATE SET user_id = $2, message = $4, msg_type = $5""", message.guild.id, message.author.id, message.channel.id, content, msg_type_o)
+            await self.pool.execute(
+                """INSERT INTO del_snipe (guild_id, user_id, channel_id, message, msg_type) VALUES ($1, $2, $3, $4, $5) 
+            ON CONFLICT (channel_id) DO UPDATE SET user_id = $2, message = $4, msg_type = $5""",
+                message.guild.id,
+                message.author.id,
+                message.channel.id,
+                content,
+                msg_type_o,
+            )
         except:
             pass
 
     async def on_guild_remove(self, guild):
         await self.redis.execute("DECR", "current_guilds")
-        self.logger.info(f"[Guild] Left guild {guild.name}({guild.id}) with {len(guild.members)} members")
+        self.logger.info(
+            f"[Guild] Left guild {guild.name}({guild.id}) with {len(guild.members)} members"
+        )
 
     async def on_guild_join(self, guild):
         await self.redis.execute("INCR", "current_guilds")
-        self.logger.info(f"[Guild] Joined guild {guild.name}({guild.id}) with {len(guild.members)} members")
+        self.logger.info(
+            f"[Guild] Joined guild {guild.name}({guild.id}) with {len(guild.members)} members"
+        )
+
 
 if __name__ == "__main__":
     uwu().run()

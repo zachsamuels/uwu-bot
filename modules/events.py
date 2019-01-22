@@ -7,7 +7,14 @@ import asyncpg
 import asyncio
 from random import choice, randint
 
-event_ids = [246938839720001536, 300088143422685185, 422181415598161921, 311553339261321216, 428888500964687873]
+event_ids = [
+    246938839720001536,
+    300088143422685185,
+    422181415598161921,
+    311553339261321216,
+    428888500964687873,
+]
+
 
 class events:
     def __init__(self, bot):
@@ -15,9 +22,10 @@ class events:
 
     async def __local_check(self, ctx):
         if ctx.author.id in event_ids:
-           return True
+            return True
 
-        raise(errorhandler.isEvent(ctx))
+        raise (errorhandler.isEvent(ctx))
+
 
 def setup(bot):
     bot.add_cog(events(bot))

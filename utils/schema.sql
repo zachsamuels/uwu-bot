@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS user_timers (
 
 CREATE TABLE IF NOT EXISTS user_stats (
     user_id BIGINT PRIMARY KEY NOT NULL REFERENCES user_settings(user_id) ON DELETE CASCADE,
+    username VARCHAR(512) NOT NULL DEFAULT 'None',
     uwus BIGINT NOT NULL,
     foes_killed BIGINT NOT NULL,
     total_deaths BIGINT NOT NULL,

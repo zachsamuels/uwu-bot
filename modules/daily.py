@@ -10,24 +10,37 @@ from utils import errorhandler
 import secrets
 from random import choice
 
-uwu_emote = '<:uwu:521394346688249856>'
+uwu_emote = "<:uwu:521394346688249856>"
+
 
 class daily:
     def __init__(self, bot):
         self.bot = bot
 
     async def __local_check(self, ctx):
-        if await self.bot.pool.fetchrow("SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id):
-           return True
+        if await self.bot.pool.fetchrow(
+            "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
+        ):
+            return True
 
-        raise(errorhandler.hasUwU(ctx))
+        raise (errorhandler.hasUwU(ctx))
 
     @errorhandler.on_cooldown()
     @commands.command(description="Claim your daily uwus.")
     async def dailies(self, ctx):
-        await self.bot.pool.execute("UPDATE user_stats SET uwus = user_stats.uwus + 500 WHERE user_id = $1", ctx.author.id)
-        await self.bot.redis.execute("SET", f"{ctx.author.id}-{ctx.command.qualified_name}", "cooldown", "EX", 86400)
+        await self.bot.pool.execute(
+            "UPDATE user_stats SET uwus = user_stats.uwus + 500 WHERE user_id = $1",
+            ctx.author.id,
+        )
+        await self.bot.redis.execute(
+            "SET",
+            f"{ctx.author.id}-{ctx.command.qualified_name}",
+            "cooldown",
+            "EX",
+            86400,
+        )
         await ctx.send(f"{uwu_emote} You claimed your daily `500` uwus!")
+
 
 def setup(bot):
     bot.add_cog(daily(bot))

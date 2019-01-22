@@ -8,53 +8,103 @@ import asyncpg
 from datetime import datetime
 from utils import errorhandler
 
+
 class create:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(description='Create a new uwulonian.', brief="Create a uwulonian")
+    @commands.command(description="Create a new uwulonian.", brief="Create a uwulonian")
     async def create(self, ctx):
-        if await self.bot.pool.fetchrow("SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id):
-            return await ctx.send('You already have a uwulonian created.', delete_after=30)
+        if await self.bot.pool.fetchrow(
+            "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
+        ):
+            return await ctx.send(
+                "You already have a uwulonian created.", delete_after=30
+            )
 
         def check(amsg):
             return amsg.author == ctx.author
-        name_set = await ctx.send('Please enter your uwulonians name. This will timeout after 30 seconds.')
+
+        name_set = await ctx.send(
+            "Please enter your uwulonians name. This will timeout after 30 seconds."
+        )
         try:
-            name = await self.bot.wait_for('message', timeout=30, check=check)
+            name = await self.bot.wait_for("message", timeout=30, check=check)
         except asyncio.TimeoutError:
-            return await name_set.edit(content='Create timed out', delete_after=30)
+            return await name_set.edit(content="Create timed out", delete_after=30)
 
         if len(name.content) > 60 or len(name.content) < 3:
             await name_set.delete()
-            return await ctx.send("Invalid name. Names can't be longer then 60 chars or less than 3 chars.", delete_after=30)
+            return await ctx.send(
+                "Invalid name. Names can't be longer then 60 chars or less than 3 chars.",
+                delete_after=30,
+            )
         try:
-            await self.bot.pool.execute('INSERT INTO user_settings ("user_id","user_name") VALUES ($1,$2);', ctx.author.id,name.content)
+            await self.bot.pool.execute(
+                "INSERT INTO user_settings (user_id, user_name) VALUES ($1, $2);",
+                ctx.author.id,
+                name.content,
+            )
         except asyncpg.UniqueViolationError:
-            return await ctx.send(f"{name.content} is already used. Please try again with a different name.", delete_after=30)
+            return await ctx.send(
+                f"{name.content} is already used. Please try again with a different name.",
+                delete_after=30,
+            )
 
-        await self.bot.pool.execute('INSERT INTO user_stats ("user_id","uwus","foes_killed","total_deaths","current_xp","current_level") VALUES ($1,$2,$3,$4,$5,$6);', ctx.author.id,1000,0,0,0,0)
+        await self.bot.pool.execute(
+            "INSERT INTO user_stats (user_id, uwus, foes_killed, total_deaths, current_xp, current_level, username) VALUES ($1, $2, $3, $4, $5, $6);",
+            ctx.author.id,
+            1000,
+            0,
+            0,
+            0,
+            0,
+            name.content,
+        )
         await name_set.delete()
-        await ctx.send(f"Success! Made uwulonian with name `{name.content}`. Please read `uwu rules` for uwus rules regarding usage.".replace('@','@\u200b'))
+        await ctx.send(
+            f"Success! Made uwulonian with name `{name.content}`. Please read `uwu rules` for uwus rules regarding usage.".replace(
+                "@", "@\u200b"
+            )
+        )
 
     @errorhandler.has_uwulonian()
-    @commands.command(description="Rename your uwulonian.", brief="Rename your uwulonian")
+    @commands.command(
+        description="Rename your uwulonian.", brief="Rename your uwulonian"
+    )
     async def rename(self, ctx, *, name):
         if len(name) > 60 or len(name) < 3:
-            return await ctx.send("Invalid name. Names can't be longer then 60 chars or less than 3 chars.", delete_after=30)
+            return await ctx.send(
+                "Invalid name. Names can't be longer then 60 chars or less than 3 chars.",
+                delete_after=30,
+            )
         try:
-            await self.bot.pool.execute("UPDATE user_settings SET user_name = $1 WHERE user_id = $2", name.replace('@','@\u200b'), ctx.author.id)
+            await self.bot.pool.execute(
+                "UPDATE user_settings SET user_name = $1 WHERE user_id = $2",
+                name.replace("@", "@\u200b"),
+                ctx.author.id,
+            )
+            await self.bot.pool.execute(
+                "UPDATE user_stats SET username = $1 WHERE user_id = $2",
+                name.replace("@", "@\u200b"),
+                ctx.author.id,
+            )
         except asyncpg.UniqueViolationError:
-            return await ctx.send(f"That name is already used. Please try again with a different name.")
-        guild = self.bot.get_guild(513888506498646052)
-        channel = discord.utils.get(guild.text_channels, id=514246616459509760)
+            return await ctx.send(
+                f"That name is already used. Please try again with a different name."
+            )
+        guild = self.bot.get_guild(513_888_506_498_646_052)
+        channel = discord.utils.get(guild.text_channels, id=514_246_616_459_509_760)
         await channel.send(
-f"""```ini
+            f"""```ini
 [Name change]
 User {ctx.author}({ctx.author.id})
 Name {name}
-```""")
-        await ctx.send("Name changed. Note: Abuse of this system will end with a character deletion or blacklist.")
+```"""
+        )
+        await ctx.send(
+            "Name changed. Note: Abuse of this system will end with a character deletion or blacklist."
+        )
 
     @errorhandler.has_uwulonian()
     @commands.command(description="Delete your uwulonian.", brief="Delete uwulonian.")
@@ -63,23 +113,40 @@ Name {name}
 
             def check(amsg):
                 return amsg.author == ctx.author
-            delete_con = await ctx.send('Are you sure you would like to delete your uwulonian?')
+
+            delete_con = await ctx.send(
+                "Are you sure you would like to delete your uwulonian?"
+            )
             try:
-                delete_cons = await self.bot.wait_for('message', timeout=30, check=check)
+                delete_cons = await self.bot.wait_for(
+                    "message", timeout=30, check=check
+                )
             except asyncio.TimeoutError:
-                return await delete_con.edit(content='Not deleting uwulonian')
+                return await delete_con.edit(content="Not deleting uwulonian")
 
             if delete_cons.content.lower() == "yes":
                 del_msg = await ctx.send("Deleting uwulonian. Give me a few seconds.")
-                await conn.execute("DELETE FROM user_settings WHERE user_id = $1", ctx.author.id)
+                await conn.execute(
+                    "DELETE FROM user_settings WHERE user_id = $1", ctx.author.id
+                )
                 await asyncio.sleep(2)
-                await conn.execute("DELETE FROM marriages WHERE user1_id = $1 OR user2_id = $1", ctx.author.id)
+                await conn.execute(
+                    "DELETE FROM marriages WHERE user1_id = $1 OR user2_id = $1",
+                    ctx.author.id,
+                )
                 await asyncio.sleep(2)
-                await conn.execute("DELETE FROM children WHERE lover1_id = $1 OR lover2_id = $1", ctx.author.id)
+                await conn.execute(
+                    "DELETE FROM children WHERE lover1_id = $1 OR lover2_id = $1",
+                    ctx.author.id,
+                )
                 await asyncio.sleep(2)
-                await conn.execute("DELETE FROM user_pets WHERE user_id = $1", ctx.author.id)
+                await conn.execute(
+                    "DELETE FROM user_pets WHERE user_id = $1", ctx.author.id
+                )
                 await asyncio.sleep(2)
-                await conn.execute("DELETE FROM spc_user_pets WHERE user_id = $1", ctx.author.id)
+                await conn.execute(
+                    "DELETE FROM spc_user_pets WHERE user_id = $1", ctx.author.id
+                )
                 await asyncio.sleep(2)
                 await delete_con.delete()
                 await del_msg.delete()
@@ -90,7 +157,6 @@ Name {name}
             else:
                 await delete_con.delete()
                 return await ctx.send("Invalid choice.")
-
 
 
 def setup(bot):

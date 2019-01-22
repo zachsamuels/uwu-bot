@@ -1,28 +1,36 @@
-
 import sys
 from discord.ext import commands
 import discord
 
-caution = '<:caution:521002590566219776>'
+caution = "<:caution:521002590566219776>"
+
 
 def on_cooldown():
     async def predicate(ctx):
-        user_cooldown = await ctx.bot.redis.pttl(f"{ctx.author.id}-{ctx.command.qualified_name}")
+        user_cooldown = await ctx.bot.redis.pttl(
+            f"{ctx.author.id}-{ctx.command.qualified_name}"
+        )
         if user_cooldown == -2:
             return True
 
-        raise commands.CommandOnCooldown(retry_after= user_cooldown / 1000, cooldown=None)
+        raise commands.CommandOnCooldown(
+            retry_after=user_cooldown / 1000, cooldown=None
+        )
 
     return commands.check(predicate)
+
 
 def has_uwulonian():
     async def predicate(ctx):
-        if await ctx.bot.pool.fetchrow("SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id):
-           return True
+        if await ctx.bot.pool.fetchrow(
+            "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
+        ):
+            return True
 
-        raise(hasUwU(ctx))
+        raise (hasUwU(ctx))
 
     return commands.check(predicate)
+
 
 def has_voted():
     async def predicate(ctx):
@@ -36,39 +44,53 @@ def has_voted():
 
 class NotPatron(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"You are not a Patron. You can become one here <https://www.patreon.com/mellOwO>")
+        super().__init__(
+            f"You are not a Patron. You can become one here <https://www.patreon.com/mellOwO>"
+        )
+
 
 class IsStaff(commands.CommandError):
     def __init__(self, ctx):
         super().__init__(f"This is a staff only command.")
 
+
 class isEvent(commands.CommandError):
     def __init__(self, ctx):
         super().__init__(f"This is an event staff only command.")
+
 
 class hasUwU(commands.CommandError):
     def __init__(self, ctx):
         super().__init__(f"You need an uwulonian for this command.")
 
+
 class hasVoted(commands.CommandError):
     def __init__(self, ctx):
-        super().__init__(f"You haven't voted. You can vote here <https://discordbots.org/bot/508725128427995136/vote>. If you voted give me a few seconds to register it.")
+        super().__init__(
+            f"You haven't voted. You can vote here <https://discordbots.org/bot/508725128427995136/vote>. If you voted give me a few seconds to register it."
+        )
+
 
 class isBeta(commands.CommandError):
     def __init__(self, ctx):
         super().__init__(f"This is a beta-server only command.")
+
 
 class errorhandler:
     def __init__(self, bot):
         self.bot = bot
 
     async def on_command_error(self, ctx, error):
-        if hasattr(ctx.command, 'on_error'):
+        if hasattr(ctx.command, "on_error"):
             return
 
-        errors = (commands.NoPrivateMessage, commands.CommandInvokeError, commands.UserInputError)
+        errors = (
+            commands.NoPrivateMessage,
+            commands.CommandInvokeError,
+            commands.UserInputError,
+        )
         c_errors = (NotPatron, IsStaff, hasUwU, isBeta, isEvent, hasVoted)
-        error = getattr(error, 'original', error)
+        error = getattr(error, "original", error)
 
         if isinstance(error, errors):
             await ctx.caution(error)
@@ -77,21 +99,28 @@ class errorhandler:
         elif isinstance(error, commands.TooManyArguments):
             await ctx.caution(f"Too many arguments. Try less?")
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.caution(f"Required argument `{str(error.param).split(':')[0]}` is missing. Ya sure you read the command description?")
+            await ctx.caution(
+                f"Required argument `{str(error.param).split(':')[0]}` is missing. Ya sure you read the command description?"
+            )
         elif isinstance(error, commands.DisabledCommand):
             await ctx.caution(f"{ctx.command} is disabled.")
         elif isinstance(error, commands.BotMissingPermissions):
-            await ctx.caution(f"I need the permission {error.missing_perms[0]}. You can check my role or channel overrides to find permissions.")
+            await ctx.caution(
+                f"I need the permission {error.missing_perms[0]}. You can check my role or channel overrides to find permissions."
+            )
         elif isinstance(error, commands.CommandOnCooldown):
             seconds = error.retry_after
             seconds = round(seconds, 2)
             hours, remainder = divmod(int(seconds), 3600)
             minutes, seconds = divmod(remainder, 60)
-            await ctx.caution(f"You are on cooldown for `{hours}`h `{minutes}`m `{seconds}`sec")
+            await ctx.caution(
+                f"You are on cooldown for `{hours}`h `{minutes}`m `{seconds}`sec"
+            )
         elif isinstance(error, c_errors):
             return await ctx.caution(error)
         else:
             print(error)
+
 
 def setup(bot):
     bot.add_cog(errorhandler(bot))

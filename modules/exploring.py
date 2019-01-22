@@ -19,7 +19,9 @@ class exploring:
         self.task_check_task = self.bot.loop.create_task(self.task_check())
 
     async def __local_check(self, ctx):
-        if await self.bot.pool.fetchrow("SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id):
+        if await self.bot.pool.fetchrow(
+            "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
+        ):
             return True
 
         raise (errorhandler.hasUwU(ctx))
@@ -44,18 +46,21 @@ class exploring:
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             await asyncio.sleep(2)
-            rows = await self.bot.pool.fetchrow("SELECT user_explores.user_id, finish_time, user_stats.uwus, user_stats.current_level, user_stats.current_xp FROM user_explores INNER JOIN user_stats ON user_explores.user_id = user_stats.user_id ORDER BY finish_time ASC LIMIT 1;")
+            rows = await self.bot.pool.fetchrow(
+                "SELECT user_explores.user_id, finish_time, user_stats.uwus, user_stats.current_level, user_stats.current_xp FROM user_explores INNER JOIN user_stats ON user_explores.user_id = user_stats.user_id ORDER BY finish_time ASC LIMIT 1;"
+            )
             if not rows:
                 continue
-            await extras.sleep_time(rows['finish_time'])
-            user = self.bot.get_user(rows['user_id'])
+            await extras.sleep_time(rows["finish_time"])
+            user = self.bot.get_user(rows["user_id"])
             foes = randint(20, 1000)
             deaths = randint(0, 2)
             uwus = (foes * 6) - (deaths * 40)
             random_tip = choice(extras.quick_tips)
             xp = round(uwus / 2, 0)
-            e = discord.Embed(color=0x7289da, description=
-f"""
+            e = discord.Embed(
+                color=0x7289DA,
+                description=f"""
 {foes} killed (6 uwus per)
 {deaths} deaths (-40 uwus per)       
 
@@ -64,33 +69,46 @@ f"""
 
 Total uwus {rows['uwus'] + uwus}
 xp {rows['current_xp'] + xp} (Hint: You need {(rows['current_level'] + 1) * 1500} xp and {(rows['current_level'] + 1) * 500} uwus to level up)
-""")
+""",
+            )
             e.set_author(name="Exploring")
             e.set_footer(text=f"Quick fact {random_tip}")
             try:
                 await user.send(embed=e)
             except (discord.Forbidden, TypeError, AttributeError):
                 pass
-            await self.bot.pool.execute("UPDATE user_stats SET uwus = user_stats.uwus + $1, current_xp = user_stats.current_xp + $2, foes_killed = user_stats.foes_killed + $3, total_deaths = user_stats.total_deaths + $4 WHERE user_id = $5", uwus, xp, foes, deaths, user.id)
-            await self.bot.pool.execute("DELETE FROM user_explores WHERE user_id = $1", rows['user_id'])
+            await self.bot.pool.execute(
+                "UPDATE user_stats SET uwus = user_stats.uwus + $1, current_xp = user_stats.current_xp + $2, foes_killed = user_stats.foes_killed + $3, total_deaths = user_stats.total_deaths + $4 WHERE user_id = $5",
+                uwus,
+                xp,
+                foes,
+                deaths,
+                user.id,
+            )
+            await self.bot.pool.execute(
+                "DELETE FROM user_explores WHERE user_id = $1", rows["user_id"]
+            )
 
     async def adventure_waiter(self):
         await self.bot.wait_until_ready()
         while not self.bot.is_closed():
             await asyncio.sleep(2)
-            rows = await self.bot.pool.fetchrow("SELECT user_adventures.user_id, finish_time, user_stats.uwus, user_stats.current_level, user_stats.current_xp FROM user_adventures INNER JOIN user_stats ON user_adventures.user_id = user_stats.user_id ORDER BY finish_time ASC LIMIT 1;")
+            rows = await self.bot.pool.fetchrow(
+                "SELECT user_adventures.user_id, finish_time, user_stats.uwus, user_stats.current_level, user_stats.current_xp FROM user_adventures INNER JOIN user_stats ON user_adventures.user_id = user_stats.user_id ORDER BY finish_time ASC LIMIT 1;"
+            )
             if not rows:
                 continue
-            await extras.sleep_time(rows['finish_time'])
-            user = self.bot.get_user(rows['user_id'])
+            await extras.sleep_time(rows["finish_time"])
+            user = self.bot.get_user(rows["user_id"])
             foes = randint(80, 1000)
             deaths = randint(0, 4)
             uwus = (foes * 8) - (deaths * 45)
             random_tip = choice(extras.quick_tips)
             xp = round(uwus / 2, 0)
             try:
-                e = discord.Embed(color=0x7289da, description=
-f"""
+                e = discord.Embed(
+                    color=0x7289DA,
+                    description=f"""
 {foes} killed (8 uwus per)
 {deaths} deaths (-45 uwus per)       
 
@@ -99,72 +117,113 @@ f"""
 
 Total uwus {rows['uwus'] + uwus}
 xp {rows['current_xp'] + xp} (Hint: You need {(rows['current_level'] + 1) * 1500} xp and {(rows['current_level'] + 1) * 500} uwus to level up)
-""")
+""",
+                )
                 e.set_author(name="Adventure")
                 e.set_footer(text=f"Quick fact {random_tip}")
                 await user.send(embed=e)
             except (discord.Forbidden, TypeError, AttributeError):
                 pass
-            await self.bot.pool.execute("UPDATE user_stats SET uwus = user_stats.uwus + $1, current_xp = user_stats.current_xp + $2, foes_killed = user_stats.foes_killed + $3, total_deaths = user_stats.total_deaths + $4 WHERE user_id = $5", uwus, xp, foes, deaths, user.id)
-            await self.bot.pool.execute("DELETE FROM user_adventures WHERE user_id = $1", rows['user_id'])
+            await self.bot.pool.execute(
+                "UPDATE user_stats SET uwus = user_stats.uwus + $1, current_xp = user_stats.current_xp + $2, foes_killed = user_stats.foes_killed + $3, total_deaths = user_stats.total_deaths + $4 WHERE user_id = $5",
+                uwus,
+                xp,
+                foes,
+                deaths,
+                user.id,
+            )
+            await self.bot.pool.execute(
+                "DELETE FROM user_adventures WHERE user_id = $1", rows["user_id"]
+            )
 
-    @commands.command(description="Make your uwulonian explore", aliases=['exp'])
+    @commands.command(description="Make your uwulonian explore", aliases=["exp"])
     async def explore(self, ctx):
         async with self.bot.pool.acquire() as conn:
-            explore = await conn.fetchrow("SELECT * FROM user_explores WHERE user_id = $1", ctx.author.id)
-            adventure = await conn.fetchrow("SELECT * FROM user_adventures WHERE user_id = $1", ctx.author.id)
+            explore = await conn.fetchrow(
+                "SELECT * FROM user_explores WHERE user_id = $1", ctx.author.id
+            )
+            adventure = await conn.fetchrow(
+                "SELECT * FROM user_adventures WHERE user_id = $1", ctx.author.id
+            )
             if explore:
-                time_left = explore['finish_time'] - datetime.utcnow()
+                time_left = explore["finish_time"] - datetime.utcnow()
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.caution(f"Your uwulonian is already exploring. It will return in `{minutes}`m `{int(seconds)}`sec.")
+                return await ctx.caution(
+                    f"Your uwulonian is already exploring. It will return in `{minutes}`m `{int(seconds)}`sec."
+                )
             if adventure:
-                time_left = adventure['finish_time'] - datetime.utcnow()
+                time_left = adventure["finish_time"] - datetime.utcnow()
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.caution(f"Your uwulonian is already adventuring. It will return in `{minutes}`m `{int(seconds)}`sec.")
+                return await ctx.caution(
+                    f"Your uwulonian is already adventuring. It will return in `{minutes}`m `{int(seconds)}`sec."
+                )
             end_time = datetime.utcnow() + timedelta(minutes=30)
-            await conn.execute("INSERT INTO user_explores (user_id, finish_time) VALUES ($1, $2)", ctx.author.id, end_time)
-            guild = self.bot.get_guild(513888506498646052)
-            channel = discord.utils.get(guild.text_channels, id=514246616459509760)
+            await conn.execute(
+                "INSERT INTO user_explores (user_id, finish_time) VALUES ($1, $2)",
+                ctx.author.id,
+                end_time,
+            )
+            guild = self.bot.get_guild(513_888_506_498_646_052)
+            channel = discord.utils.get(guild.text_channels, id=514_246_616_459_509_760)
             await channel.send(
-f"""```ini
+                f"""```ini
 [Explore Set]
 User {ctx.author}({ctx.author.id})
 Time {datetime.utcnow().strftime("%X on %x")}```
-""")
-            await ctx.send(f"Your uwulonian is now exploring! It will return in 30 minutes")
+"""
+            )
+            await ctx.send(
+                f"Your uwulonian is now exploring! It will return in 30 minutes"
+            )
 
-    @commands.command(description="Set your uwulonian on an adventure", aliases=['adv'])
+    @commands.command(description="Set your uwulonian on an adventure", aliases=["adv"])
     async def adventure(self, ctx):
         async with self.bot.pool.acquire() as conn:
-            explore = await conn.fetchrow("SELECT * FROM user_explores WHERE user_id = $1", ctx.author.id)
-            adventure = await conn.fetchrow("SELECT * FROM user_adventures WHERE user_id = $1", ctx.author.id)
+            explore = await conn.fetchrow(
+                "SELECT * FROM user_explores WHERE user_id = $1", ctx.author.id
+            )
+            adventure = await conn.fetchrow(
+                "SELECT * FROM user_adventures WHERE user_id = $1", ctx.author.id
+            )
             if explore:
-                time_left = explore['finish_time'] - datetime.utcnow()
+                time_left = explore["finish_time"] - datetime.utcnow()
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.caution(f"Your uwulonian is already exploring. It will return in `{int(minutes)}`m `{int(seconds)}`sec.")
+                return await ctx.caution(
+                    f"Your uwulonian is already exploring. It will return in `{int(minutes)}`m `{int(seconds)}`sec."
+                )
             if adventure:
-                time_left = adventure['finish_time'] - datetime.utcnow()
+                time_left = adventure["finish_time"] - datetime.utcnow()
                 hu_time_left = time_left.total_seconds()
                 seconds = round(hu_time_left, 2)
                 minutes, seconds = divmod(hu_time_left, 60)
-                return await ctx.caution(f"Your uwulonian is already adventuring. It will return in `{int(minutes)}`m `{int(seconds)}`sec.")
+                return await ctx.caution(
+                    f"Your uwulonian is already adventuring. It will return in `{int(minutes)}`m `{int(seconds)}`sec."
+                )
             end_time = datetime.utcnow() + timedelta(hours=1)
-            await conn.execute("INSERT INTO user_adventures (user_id, finish_time) VALUES ($1, $2)", ctx.author.id, end_time)
-            guild = self.bot.get_guild(513888506498646052)
-            channel = discord.utils.get(guild.text_channels, id=514246616459509760)
+            await conn.execute(
+                "INSERT INTO user_adventures (user_id, finish_time) VALUES ($1, $2)",
+                ctx.author.id,
+                end_time,
+            )
+            guild = self.bot.get_guild(513_888_506_498_646_052)
+            channel = discord.utils.get(guild.text_channels, id=514_246_616_459_509_760)
             await channel.send(
-f"""```ini
+                f"""```ini
 [Adventure Set]
 User {ctx.author}({ctx.author.id})
 Time {datetime.utcnow().strftime("%X on %x")}```
-""")
-            await ctx.send(f"Your uwulonian is now adventuring! It will return in 1 hour")
+"""
+            )
+            await ctx.send(
+                f"Your uwulonian is now adventuring! It will return in 1 hour"
+            )
+
 
 def setup(bot):
     bot.add_cog(exploring(bot))
