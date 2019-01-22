@@ -29,6 +29,7 @@ class owner:
 
     @commands.command(description="Blacklist a user via ID", brief="Blacklist")
     async def blacklist(self, ctx, user_id: int, *, reason=None):
+        user = self.bot.get_user(user_id)
         if reason is None:
             reason = "No reason"
         if len(reason) > 512:
@@ -41,7 +42,7 @@ class owner:
                 reason,
             )
             self.bot.blacklisted.append(user_id)
-            return await ctx.send(f"Done. Blacklisted `{user_id}` for `{reason}`")
+            return await ctx.send(f"Done. Blacklisted `{user.name}` for `{reason}`")
         except asyncpg.UniqueViolationError:
             return await ctx.send("Error. User already blacklisted.", delete_after=30)
 
@@ -78,6 +79,16 @@ class owner:
         except asyncpg.UniqueViolationError:
             return await ctx.send("User already a patron.", delete_after=30)
 
+    @patreon.command()
+    async def remove(self, ctx, user_id):
+        if user_id not in self.bot.patrons:
+            user = self.bot.get_user(user_id)
+            return await ctx.send(f"{user} is not a Patron.")
+
+        await self.bot.pool.execute("DELETE FROM p_users WHERE user_id = $1", user_id)
+        self.bot.patrons.remove(user_id)
+        await ctx.send("Done")
+
     @commands.is_owner()
     @commands.command()
     async def die(self, ctx):
@@ -88,6 +99,60 @@ class owner:
         self.bot.logger.info("[Logout] Logging out...")
         await ctx.send("Bye cruel world...")
         await self.bot.logout()
+
+    @commands.group(invoke_without_command=True)
+    async def uwulonian(self, ctx):
+        await ctx.send(
+            "No subcommand passed. Valid subcommands `givexp, giveuwus, removexp, removeuwus`",
+            delete_after=30,
+        )
+
+    @uwulonian.command()
+    async def givexp(self, ctx, user_id: int, amount: int):
+        user = self.bot.get_user(user_id)
+        await self.bot.pool.execute(
+            "UPDATE user_stats SET current_xp = user_stats.current_xp + $1 WHERE user_id = $2",
+            amount,
+            user_id,
+        )
+        await ctx.send(f"Gave `{user.name}` `{amount}` xp.")
+
+    @uwulonian.command()
+    async def giveuwus(self, ctx, user_id: int, amount: int):
+        user = self.bot.get_user(user_id)
+        await self.bot.pool.execute(
+            "UPDATE user_stats SET uwus = user_stats.uwus + $1 WHERE user_id = $2",
+            amount,
+            user_id,
+        )
+        await ctx.send(f"Gave `{user.name}` `{amount}` uwus.")
+
+    @uwulonian.command()
+    async def removexp(self, ctx, user_id: int, amount: int):
+        user = self.bot.get_user(user_id)
+        await self.bot.pool.execute(
+            "UPDATE user_stats SET current_xp = user_stats.current_xp - $1 WHERE user_id = $2",
+            amount,
+            user_id,
+        )
+        await ctx.send(f"Removed `{amount}` xp from `{user.name}`.")
+
+    @uwulonian.command()
+    async def removeuwus(self, ctx, user_id: int, amount: int):
+        user = self.bot.get_user(user_id)
+        await self.bot.pool.execute(
+            "UPDATE user_stats SET uwus = user_stats.uwus - $1 WHERE user_id = $2",
+            amount,
+            user_id,
+        )
+        await ctx.send(f"Removed `{amount}` uwws from `{user.name}`.")
+
+    @uwulonian.command()
+    async def status(self, ctx):
+        adv = self.bot.get_cog("exploring").adventure_task
+        expl = self.bot.get_cog("exploring").exploring_task
+        await ctx.send(f"Exploring status: \n```{expl}```")
+        await ctx.send(f"Adventure status: \n```{adv}```")
 
 
 def setup(bot):

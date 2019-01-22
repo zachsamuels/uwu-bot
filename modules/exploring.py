@@ -58,7 +58,8 @@ class exploring:
             uwus = (foes * 6) - (deaths * 40)
             random_tip = choice(extras.quick_tips)
             xp = round(uwus / 2, 0)
-            e = discord.Embed(
+            try:
+                e = discord.Embed(
                 color=0x7289DA,
                 description=f"""
 {foes} killed (6 uwus per)
@@ -70,10 +71,9 @@ class exploring:
 Total uwus {rows['uwus'] + uwus}
 xp {rows['current_xp'] + xp} (Hint: You need {(rows['current_level'] + 1) * 1500} xp and {(rows['current_level'] + 1) * 500} uwus to level up)
 """,
-            )
-            e.set_author(name="Exploring")
-            e.set_footer(text=f"Quick fact {random_tip}")
-            try:
+                )
+                e.set_author(name="Exploring")
+                e.set_footer(text=f"Quick fact {random_tip}")
                 await user.send(embed=e)
             except (discord.Forbidden, TypeError, AttributeError):
                 pass
