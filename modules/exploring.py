@@ -60,8 +60,8 @@ class exploring:
             xp = round(uwus / 2, 0)
             try:
                 e = discord.Embed(
-                color=0x7289DA,
-                description=f"""
+                    color=0x7289DA,
+                    description=f"""
 {foes} killed (6 uwus per)
 {deaths} deaths (-40 uwus per)       
 
