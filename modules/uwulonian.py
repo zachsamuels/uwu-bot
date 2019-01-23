@@ -215,7 +215,7 @@ class uwulonian:
     async def levelup(self, ctx):
         async with self.bot.pool.acquire() as conn:
             user = await conn.fetchrow(
-                "SELECT * FROM user_settings WHERE user_id = $1", ctx.author.id
+                "SELECT * FROM user_stats WHERE user_id = $1", ctx.author.id
             )
             new_level = user["current_level"] + 1
             uwus_needed = new_level * 500
