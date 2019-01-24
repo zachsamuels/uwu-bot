@@ -37,9 +37,10 @@ class owner:
 
         try:
             await self.bot.pool.execute(
-                "INSERT INTO blacklists (user_id, reason) VALUES ($1, $2)",
+                "INSERT INTO blacklists (user_id, reason, mod_id) VALUES ($1, $2, $3)",
                 user_id,
                 reason,
+                ctx.author.id,
             )
             self.bot.blacklisted.append(user_id)
             return await ctx.send(f"Done. Blacklisted `{user.name}` for `{reason}`")
@@ -57,7 +58,7 @@ class owner:
             self.bot.blacklisted.remove(user_id)
             return await ctx.send("Done")
         except:
-            await ctx.sendz("User not blacklisted.", delete_after=30)
+            await ctx.send("User not blacklisted.", delete_after=30)
 
     @commands.group(invoke_without_command=True)
     async def patreon(self, ctx):
@@ -71,22 +72,35 @@ class owner:
             return await ctx.send("Invalid tier. Valid are `Supporter, Awesome, Wow`")
 
         try:
+            user = self.bot.get_user(user_id)
             await self.bot.pool.execute(
                 "INSERT INTO p_users (user_id, tier) VALUES ($1, $2)", user_id, tier
             )
             self.bot.patrons.append(user_id)
+            await user.send(
+                f"""
+Thanks for your **{tier}** patronage! Enjoy your patron only commands!
+```
+"uwu color random" Set your profile color to a random color
+"uwu patron timecheck" Check how long you have been a patron for
+"uwu patron biweekly" Extra 5000 uwus per 2 weeks
+```
+*Have recommendations? DM mellowmarshe#0001 or join the support server (https://uwu-bot.xyz/discord)*
+"""
+            )
             return await ctx.send("Done")
         except asyncpg.UniqueViolationError:
             return await ctx.send("User already a patron.", delete_after=30)
 
     @patreon.command()
-    async def remove(self, ctx, user_id):
-        if user_id not in self.bot.patrons:
+    async def remove(self, ctx, user_id: int):
+        try:
+            self.bot.patrons.remove(user_id)
+        except:
             user = self.bot.get_user(user_id)
             return await ctx.send(f"{user} is not a Patron.")
 
         await self.bot.pool.execute("DELETE FROM p_users WHERE user_id = $1", user_id)
-        self.bot.patrons.remove(user_id)
         await ctx.send("Done")
 
     @commands.is_owner()

@@ -163,10 +163,10 @@ class uwu(commands.Bot):
         bl_users = await self.pool.fetch("SELECT * FROM blacklists")
         patrons = await self.pool.fetch("SELECT * FROM p_users")
         for i in range(len(bl_users)):
-            self.blacklisted.append(bl_users[i]["user_id"])
+            self.blacklisted.append(int(bl_users[i]["user_id"]))
         self.logger.info(f"[Start] Blacklisted users added.")
         for i in range(len(patrons)):
-            self.patrons.append(patrons[i]["user_id"])
+            self.patrons.append(int(patrons[i]["user_id"]))
         self.logger.info(f"[Start] Patrons added.")
         game = discord.Game("with fwends")
         await self.change_presence(status=discord.Status.dnd, activity=game)

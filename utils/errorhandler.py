@@ -42,6 +42,18 @@ def has_voted():
     return commands.check(predicate)
 
 
+def is_patron():
+    async def predicate(ctx):
+        if await self.bot.pool.fetchrow(
+            "SELECT user_id FROM p_users WHERE user_id = $1", ctx.author.id
+        ):
+            return True
+
+        raise (NotPatron(ctx))
+
+    return commands.check(predicate)
+
+
 class NotPatron(commands.CommandError):
     def __init__(self, ctx):
         super().__init__(

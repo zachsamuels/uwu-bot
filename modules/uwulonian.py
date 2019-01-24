@@ -105,6 +105,7 @@ class uwulonian:
             f"""Some valid colors are `{", ".join(extras.pil_colors)}`. A full list of colors can be found here <https://www.uwu-bot.xyz/color/>"""
         )
 
+    @errorhandler.is_patron()
     @color.command()
     async def random(self, ctx):
         rand_color = choice(extras.all_pil_colors)
