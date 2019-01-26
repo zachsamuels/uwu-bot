@@ -44,7 +44,7 @@ def has_voted():
 
 def is_patron():
     async def predicate(ctx):
-        if await self.bot.pool.fetchrow(
+        if await ctx.bot.pool.fetchrow(
             "SELECT user_id FROM p_users WHERE user_id = $1", ctx.author.id
         ):
             return True

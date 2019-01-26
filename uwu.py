@@ -54,7 +54,6 @@ startup_extensions = [
     "modules.misc",
     "modules.patron",
     "modules.DBL",
-    "modules.marriage",
     "modules.uwus",
     "modules.events",
     "modules.daily",

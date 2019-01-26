@@ -25,16 +25,21 @@ class uwulonian:
     def do_profile(self, author, avy, color):
         with Image.open("assets/profbg.png") as prof:
             font = ImageFont.truetype("assets/Comfortaa-Regular.ttf", 29)
+            font1 = ImageFont.truetype("assets/Comfortaa-Regular.ttf", 45)
+            font2 = ImageFont.truetype("assets/Comfortaa-Regular.ttf", 34)
             draw = ImageDraw.Draw(prof)
             resize_avy = avy.resize((200, 200), Image.ANTIALIAS)
             fill = ImageColor.getrgb(color["profile_color"])
+            draw.text((25, 215), f"{color['username']}", fill=(0, 0, 0), font=font1)
             draw.text((640, 35), f"{color['current_level']}", fill=fill, font=font)
-            draw.text((640, 93), f"{color['uwus']}", fill=fill, font=font)
-            draw.text((640, 147), f"{color['current_xp']}", fill=fill, font=font)
-            maths = 0
-            if color["foes_killed"] != 0:
-                maths = f"{color['total_deaths'] / color['foes_killed'] * 100:.2f}"
-            draw.text((640, 222), f"{maths}", fill=fill, font=font)
+            draw.text((640, 93), f"{color['uwus']:6}", fill=fill, font=font)
+            draw.text((640, 147), f"{color['current_xp']:6}", fill=fill, font=font)
+            draw.text(
+                (606, 219),
+                f"""{color['time_created'].strftime("%x at %X")}""",
+                fill=(0, 0, 0),
+                font=font2,
+            )
             resize_avy = resize_avy.convert("RGBA")
             prof.paste(resize_avy)
             output = BytesIO()
