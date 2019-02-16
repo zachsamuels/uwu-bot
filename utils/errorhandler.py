@@ -66,6 +66,15 @@ class IsStaff(commands.CommandError):
         super().__init__(f"This is a staff only command.")
 
 
+class IsRatelimited(commands.CommandError):
+    def __init__(self, ctx, retry_after):
+        seconds = retry_after
+        seconds = round(seconds, 2)
+        hours, remainder = divmod(int(seconds), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        super().__init__(f"**Ratelimited**: `{seconds}` seconds.")
+
+
 class isEvent(commands.CommandError):
     def __init__(self, ctx):
         super().__init__(f"This is an event staff only command.")
@@ -101,7 +110,15 @@ class errorhandler:
             commands.CommandInvokeError,
             commands.UserInputError,
         )
-        c_errors = (NotPatron, IsStaff, hasUwU, isBeta, isEvent, hasVoted)
+        c_errors = (
+            NotPatron,
+            IsStaff,
+            hasUwU,
+            isBeta,
+            isEvent,
+            hasVoted,
+            IsRatelimited,
+        )
         error = getattr(error, "original", error)
 
         if isinstance(error, errors):

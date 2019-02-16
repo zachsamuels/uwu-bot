@@ -119,3 +119,20 @@ CREATE TABLE IF NOT EXISTS blacklists (
     mod_id BIGINT NOT NULL,
     bl_id SERIAL NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS user_banks (
+    owner_id BIGINT PRIMARY KEY REFERENCES user_settings(user_id) ON DELETE CASCADE,
+    bank_name VARCHAR(512) NOT NULL,
+    in_bank BIGINT NOT NULL DEFAULT 0,
+    bank_level BIGINT NOT NULL DEFAULT 0,
+    upgrade_level BIGINT NOT NULL DEFAULT 0,
+    bank_id SERIAL NOT NULL,
+    recent_raid VARCHAR(512) NOT NULL DEFAULT 'None',
+    time_created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS bank_members (
+    bank_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    amount_given BIGINT NOT NULL DEFAULT 0
+);

@@ -13,6 +13,7 @@ import aiohttp
 import aioredis
 import psutil
 import discord
+from utils import errorhandler
 import logging.handlers
 import lavalink
 import utils
@@ -96,7 +97,7 @@ class uwu(commands.Bot):
         retry_after = bucket.update_rate_limit()
 
         if retry_after:
-            raise commands.CommandOnCooldown(bucket, retry_after)
+            raise errorhandler.IsRatelimited(ctx, retry_after)
         else:
             return True
 

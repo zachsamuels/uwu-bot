@@ -135,51 +135,46 @@ You have 30 seconds to guess! Good luck!
                 name = await self.bot.wait_for("message", timeout=30, check=check)
             except asyncio.TimeoutError:
                 await embed.delete()
-                await conn.execute(
-                    "DELETE FROM guessing WHERE guild_id = $1 AND channel_id = $2",
-                    ctx.guild.id,
-                    ctx.channel.id,
-                )
                 self.active_games.remove(ctx.channel.id)
                 return await ctx.send(
                     f"Times up! The user was {randmem.name}.".replace("@", "@\u200b")
                 )
-
-            amount = 50
-            booster = await conn.fetchrow(
-                "SELECT boost_type, boost_amount, active_boosters FROM user_boosters WHERE user_id = $1",
-                name.author.id,
-            )
-            if not booster or booster["boost_type"] == "XP":
-                status = await conn.fetchrow(
-                    "UPDATE user_stats SET uwus = user_stats.uwus + $1 WHERE user_id = $2 RETURNING True",
-                    amount,
+            try:
+                amount = 50
+                booster = await conn.fetchrow(
+                    "SELECT boost_type, boost_amount, active_boosters FROM user_boosters WHERE user_id = $1",
                     name.author.id,
                 )
-                if status:
-                    await embed.delete()
-                    self.active_games.remove(ctx.channel.id)
-                    return await ctx.send(
-                        f"{name.author} guessed correctly and got `50` uwus! It was {randmem.name}."
+                if not booster or booster["boost_type"] == "XP":
+                    status = await conn.fetchrow(
+                        "UPDATE user_stats SET uwus = user_stats.uwus + $1 WHERE user_id = $2 RETURNING True",
+                        amount,
+                        name.author.id,
                     )
-            if booster["boost_type"] == "uwus":
-                amount = amount * booster["boost_amount"]
-                status = await conn.fetchrow(
-                    "UPDATE user_stats SET uwus = user_stats.uwus + $1 WHERE user_id = $2 RETURNING True",
-                    amount,
-                    name.author.id,
+                    if status:
+                        await embed.delete()
+                        self.active_games.remove(ctx.channel.id)
+                        return await ctx.send(
+                            f"{name.author} guessed correctly and got `50` uwus! It was {randmem.name}."
+                        )
+                if booster["boost_type"] == "uwus":
+                    amount = amount * booster["boost_amount"]
+                    status = await conn.fetchrow(
+                        "UPDATE user_stats SET uwus = user_stats.uwus + $1 WHERE user_id = $2 RETURNING True",
+                        amount,
+                        name.author.id,
+                    )
+                    if status:
+                        await embed.delete()
+                        self.active_games.remove(ctx.channel.id)
+                        return await ctx.send(
+                            f"{name.author} guessed correctly and got `{amount}` uwus! It was {randmem.name}. {name.author} has an {booster['active_boosters']} activated! Enjoy the extra uwus"
+                        )
+            except:
+                self.active_games.remove(ctx.channel.id)
+                await ctx.send(
+                    f"{name.author} got it right but does not have an uwulonian. It was {randmem.name}."
                 )
-                if status:
-                    await embed.delete()
-                    self.active_games.remove(ctx.channel.id)
-                    return await ctx.send(
-                        f"{name.author} guessed correctly and got `{amount}` uwus! It was {randmem.name}. {name.author} has an {booster['active_boosters']} activated! Enjoy the extra uwus"
-                    )
-
-            self.active_games.remove(ctx.channel.id)
-            await ctx.send(
-                f"{name.author} got it right but does not have an uwulonian. It was {randmem.name}."
-            )
 
     @commands.command(
         description="Give other people some of your uwus", brief="Give uwus"

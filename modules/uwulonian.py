@@ -36,7 +36,7 @@ class uwulonian:
             draw.text((640, 147), f"{color['current_xp']:6}", fill=fill, font=font)
             draw.text(
                 (606, 219),
-                f"""{color['time_created'].strftime("%x at %X")}""",
+                f"""{color['time_created'].strftime("%x")}""",
                 fill=(0, 0, 0),
                 font=font2,
             )
@@ -49,11 +49,13 @@ class uwulonian:
 
     @commands.bot_has_permissions(attach_files=True)
     @commands.command()
-    async def profile(self, ctx):
+    async def profile(self, ctx, user: discord.Member = None):
         async with self.bot.pool.acquire() as conn:
+            if user is None:
+                user = ctx.author
             uwulonian_name = await conn.fetchrow(
                 "SELECT * FROM user_settings INNER JOIN user_stats ON user_settings.user_id = user_stats.user_id WHERE user_settings.user_id = $1 AND user_stats.user_id = $1",
-                ctx.author.id,
+                user.id,
             )
             if uwulonian_name is None:
                 return await ctx.caution(
@@ -62,20 +64,16 @@ class uwulonian:
 
             start = time.perf_counter()
             async with self.bot.session.get(
-                ctx.author.avatar_url_as(format="png"), raise_for_status=True
+                user.avatar_url_as(format="png"), raise_for_status=True
             ) as r:
                 author_avy = Image.open(BytesIO(await r.read()))
             async with ctx.typing():
                 await ctx.send(
                     file=discord.File(
                         await self.bot.loop.run_in_executor(
-                            None,
-                            self.do_profile,
-                            ctx.author,
-                            author_avy,
-                            uwulonian_name,
+                            None, self.do_profile, user, author_avy, uwulonian_name
                         ),
-                        filename=f"{ctx.author.id}_prof.png",
+                        filename=f"{user.id}_prof.png",
                     )
                 )
 

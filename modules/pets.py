@@ -325,7 +325,7 @@ class pets:
     async def cuddles(self, ctx, *, pet: int = None):
         async with self.bot.pool.acquire() as conn:
             if pet is None:
-                return await ctx.send(
+                return await ctx.caution(
                     "Do `uwu pets` to find your pets to cuddles with. You need to do `uwu cuddle ID` replace ID with the pets ID."
                 )
             pets = await conn.fetch(
