@@ -63,6 +63,7 @@ startup_extensions = [
     "modules.votes",
     "modules.logging",
     "modules.music",
+    "modules.moderation",
 ]
 
 prefixes = ["uwu ", "|"]
@@ -71,7 +72,7 @@ prefixes = ["uwu ", "|"]
 class uwu(commands.Bot):
     def __init__(self):
         super().__init__(
-            command_prefix=commands.when_mentioned_or(*prefixes),
+            command_prefix=self.get_pre,
             case_insensitive=True,
             description=description,
             reconnect=True,
@@ -87,10 +88,19 @@ class uwu(commands.Bot):
         self.logger = logging.getLogger("bot")
         self.blacklisted = []
         self.patrons = []
+        self.prefixes = {}
         self.commands_ran = 0
         self.add_check(self.global_cooldown)
 
     map = commands.CooldownMapping.from_cooldown(1, 4, commands.BucketType.user)
+
+    async def get_pre(self, bot, message):
+        try:
+            prefixess = bot.prefixes[message.guild.id]
+            if prefixess:
+                return commands.when_mentioned_or(prefixess)(bot, message)
+        except KeyError:
+            return commands.when_mentioned_or(*prefixes)(bot, message)
 
     async def global_cooldown(self, ctx: commands.Context):
         bucket = self.map.get_bucket(ctx.message)
@@ -170,6 +180,9 @@ class uwu(commands.Bot):
         print("Bot ready!")
         bl_users = await self.pool.fetch("SELECT * FROM blacklists")
         patrons = await self.pool.fetch("SELECT * FROM p_users")
+        prefixes = await self.pool.fetch("SELECT guild_id, prefix FROM guild_prefixes")
+        for i in prefixes:
+            self.prefixes[i[0]] = i[1]
         for i in range(len(bl_users)):
             self.blacklisted.append(int(bl_users[i]["user_id"]))
         self.logger.info(f"[Start] Blacklisted users added.")

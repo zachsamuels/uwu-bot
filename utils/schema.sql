@@ -136,3 +136,8 @@ CREATE TABLE IF NOT EXISTS bank_members (
     user_id BIGINT NOT NULL,
     amount_given BIGINT NOT NULL DEFAULT 0
 );
+
+CREATE TABLE IF NOT EXISTS guild_prefixes (
+    guild_id BIGINT PRIMARY KEY NOT NULL,
+    prefix VARCHAR(512) NOT NULL
+);
