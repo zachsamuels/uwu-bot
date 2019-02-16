@@ -112,6 +112,14 @@ class uwu(commands.Bot):
     async def on_message_edit(self, before, after):
         if after.author.bot:
             return
+        ctx = await self.get_context(after)
+
+        if ctx.command:
+            if after.author.id in self.blacklisted:
+                return await after.channel.send(
+                    f"You may not use uwu. You were blacklisted."
+                )
+
         await self.process_commands(after)
 
     async def on_message(self, message):
