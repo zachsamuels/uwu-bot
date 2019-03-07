@@ -9,7 +9,7 @@ from datetime import datetime
 from utils import errorhandler
 
 
-class create:
+class create(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -19,7 +19,7 @@ class create:
             "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
         ):
             return await ctx.send(
-                "You already have a uwulonian created.", delete_after=30
+                "You already have an uwulonian created.", delete_after=30
             )
 
         def check(amsg):

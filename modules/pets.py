@@ -22,12 +22,12 @@ beta_servers = [
 caution = "<:caution:521002590566219776>"
 
 
-class pets:
+class pets(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.booster_left_task = self.bot.loop.create_task(self.booster_left())
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if await self.bot.pool.fetchrow(
             "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
         ):
@@ -35,7 +35,7 @@ class pets:
 
         raise (errorhandler.hasUwU(ctx))
 
-    async def __unload(self):
+    async def cog_unload(self):
         try:
             self.booster_left_task.cancel()
         except:
@@ -243,8 +243,10 @@ class pets:
                 return await ctx.caution("Adoption timed out")
 
             if pet_adopt.content.lower() == "cancel":
+                await pet_embed.delete()
                 return await ctx.caution("Cancelled.")
             if pet_adopt.content not in pet_nums:
+                await pet_embed.delete()
                 return await ctx.caution("Invalid choice.")
 
             if pet_adopt.content == "1":
@@ -403,9 +405,9 @@ class pets:
                 love = randint(1, 2)
                 chance_of_item = randint(1, 80)
                 entertain_msges = [
-                    "You and your pet are watching a move together!",
+                    "You and your pet are watching a movie together!",
                     "You are buying your pet a new toy.",
-                    "You and your pet are playing dess up together!",
+                    "You and your pet are playing dress up together!",
                 ]
                 msg = "Your pet loves the entertainment"
                 enter_msg = await ctx.send(choice(entertain_msges))
@@ -468,7 +470,7 @@ RETURNING True;""",
         )
         if pet is None:
             return await ctx.caution(
-                "Do `uwu pets special` to find your sepcial pets. You need to do `uwu booster list ID` replace ID with the pets ID."
+                "Do `uwu pets special` to find your special pets. You need to do `uwu booster list ID` replace ID with the pets ID."
             )
         if not boosters:
             return await ctx.caution(
@@ -673,6 +675,45 @@ VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (pet_id) DO UPDATE SET pet_id = $1, 
             return await ctx.caution(
                 f"You already have a {booster_left['active_boosters']}. It ends in `{int(hours)}`h `{int(minutes)}`m `{int(seconds)}`sec"
             )
+
+    @commands.command()
+    async def release(self, ctx, special: bool, pet: int = None):
+        async with self.bot.pool.acquire() as conn:
+            if pet is None:
+                return await ctx.caution(
+                    "Do `uwu pets` to find your pets to cuddles with. You need to do `uwu cuddle ID` replace ID with the pets ID."
+                )
+            pets = None
+            if special is False:
+                pets = await conn.fetchrow(
+                    "SELECT user_id, pet_id FROM user_pets WHERE user_id = $1 AND pet_id = $2",
+                    ctx.author.id,
+                    pet,
+                )
+            if special is True:
+                pets = await conn.fetchrow(
+                    "SELECT user_id, pet_id FROM spc_user_pets WHERE user_id = $1 AND pet_id = $2",
+                    ctx.author.id,
+                    pet,
+                )
+            if not pets:
+                return await ctx.caution("You don't have that pet or it's special.")
+            else:
+                if special is True:
+                    await conn.execute(
+                        "DELETE FROM spc_user_pets WHERE pet_id = $1 AND user_id = $2",
+                        pet,
+                        ctx.author.id,
+                    )
+                if special is False:
+                    await conn.execute(
+                        "DELETE FROM user_pets WHERE pet_id = $1 AND user_id = $2",
+                        pet,
+                        ctx.author.id,
+                    )
+                await ctx.send(
+                    f"""Released your `{pets["pet_id"]}`. Special pet: `{special}`"""
+                )
 
 
 def setup(bot):

@@ -11,11 +11,11 @@ from datetime import datetime, timedelta
 from random import randint
 
 
-class votes:
+class votes(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if await self.bot.redis.execute("GET", f"{ctx.author.id}-vote"):
             return True
 

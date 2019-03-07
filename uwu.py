@@ -95,6 +95,8 @@ class uwu(commands.Bot):
     map = commands.CooldownMapping.from_cooldown(1, 4, commands.BucketType.user)
 
     async def get_pre(self, bot, message):
+        if not message.guild:
+            return commands.when_mentioned_or(*prefixes)(bot, message)
         try:
             prefixess = bot.prefixes[message.guild.id]
             if prefixess:

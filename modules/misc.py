@@ -21,7 +21,7 @@ idle = "<:idle_status:506963324529803264>"
 # git fix again again again
 
 
-class misc:
+class misc(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -149,7 +149,7 @@ class misc:
     @commands.command(description="Send voting link", brief="Send a link to vote")
     async def upvote(self, ctx):
         await ctx.send(
-            "You can vote for me here! https://discordbots.org/bot/508725128427995136/vote I greatly appreciate voting as it helps the bot a lot"
+            "You can vote for me here! https://discordbots.org/bot/508725128427995136/vote or <https://botsfordiscord.com/bot/508725128427995136/vote> I greatly appreciate voting as it helps the bot a lot"
         )
 
     @commands.command(description="Bot rules", aliases=["tos"], brief="Our bot rules")
@@ -166,8 +166,24 @@ uwu rules. You must follow these or we will take action
 
     @commands.command(description="Get bot invite link", brief="Get invite for bot")
     async def invite(self, ctx):
+        permissions = discord.Permissions()
+
+        permissions.update(
+            add_reactions=True,
+            attach_files=True,
+            change_nickname=True,
+            embed_links=True,
+            external_emojis=True,
+            manage_messages=True,
+            read_messages=True,
+            read_message_history=True,
+            send_messages=True,
+            send_tts_messages=True,
+            view_audit_log=True,
+        )
+
         await ctx.send(
-            "https://discordapp.com/oauth2/authorize?client_id=508725128427995136&scope=bot&permissions=67501248"
+            f"<{discord.utils.oauth_url(self.bot.user.id, permissions=permissions)}>"
         )
 
     @commands.command(description="Snipe a deleted message", aliases=["snipsnop"])
@@ -230,6 +246,87 @@ uwu rules. You must follow these or we will take action
             "Your report was sent. Join the support server for news on your report!"
         )
         await supp.send(embed=e)
+
+    # Sourced mainly from NekoBot https://github.com/hibikidesu/NekoBot/blob/master/modules/fun.py
+    @commands.command()
+    async def minesweeper(self, ctx, size: int = 5):
+        m_offsets = [
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+        ]
+        m_numbers = [":one:", ":two:", ":three:", ":four:", ":five:", ":six:"]
+        size = max(min(size, 8), 2)
+        bombs = [
+            [randint(0, size - 1), randint(0, size - 1)] for x in range(int(size - 1))
+        ]
+        is_on_board = lambda x, y: 0 <= x < size and 0 <= y < size
+        has_bomb = lambda x, y: [i for i in bombs if i[0] == x and i[1] == y]
+        embed = discord.Embed(color=0x7289DA, description="")
+        embed.set_author(name="Press to play")
+        for y in range(size):
+            for x in range(size):
+                tile = f"||{chr(11036)}||"
+                if has_bomb(x, y):
+                    tile = f"||{chr(128163)}||"
+                else:
+                    count = 0
+                    for xmod, ymod in m_offsets:
+                        if is_on_board(x + xmod, y + ymod) and has_bomb(
+                            x + xmod, y + ymod
+                        ):
+                            count += 1
+                    if count != 0:
+                        tile = f"||{m_numbers[count - 1]}||"
+                embed.description += tile
+            embed.description += "\n"
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=["8ball"])
+    async def eightball(self, ctx, *, question):
+        responses = [
+            "It is certain.",
+            "It is decidedly so.",
+            "Without a doubt.",
+            "Yes - definitely.",
+            "You may rely on it.",
+            "As I see it, yes.",
+            "Most likely.",
+            "Outlook good.",
+            "Yes.",
+            "Signs point to yes.",
+            "Reply hazy, try again.",
+            "Ask again later.",
+            "Better not tell you now.",
+            "Cannot predict now.",
+            "Concentrate and ask again.",
+            "Don't count on it.",
+            "My reply is no.",
+            "My sources say no.",
+            "Outlook not so good.",
+            "Very doubtful.",
+        ]
+        msg = await ctx.send(f"Q: **{question}...**")
+        await asyncio.sleep(3)
+        await msg.edit(content=f"A: **{choice(responses)}**")
+
+    @commands.command(aliases=["lovedar"])
+    async def love(self, ctx, lover: discord.Member, lovee: discord.Member):
+        msg = await ctx.send("**Calculating...**")
+        await asyncio.sleep(3)
+        seed(int(str(lover.id) + str(lovee.id)))
+        if lover == lovee:
+            love = 0
+        else:
+            love = randint(1, 10000) / 100
+        await msg.edit(
+            content=f"The love calculator says {lover.name} loves {lovee.name} **{love}**%"
+        )
 
 
 def setup(bot):

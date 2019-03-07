@@ -29,19 +29,28 @@ uwu_emote = "<:uwu:521394346688249856>"
 caution = "<:caution:521002590566219776>"
 
 
-class music:
+class music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        if not hasattr(bot, "lavalink") or not bot.lavalink:
-            bot.lavalink = lavalink.Client(bot.user.id)
-            bot.lavalink.add_node(
-                bot.config["lavalink_ip"], 8080, bot.config["lavalink"], "us", "us-east"
-            )
-            bot.add_listener(bot.lavalink.voice_update_handler, "on_socket_response")
-        self.bot.lavalink.add_event_hook(self.track_hook)
 
-    def __unload(self):
+    def cog_unload(self):
         self.bot.lavalink._event_hooks.clear()
+
+    def cog_load(self):
+        if self.bot.is_ready:
+            if not self.bot.lavalink:
+                self.bot.lavalink = lavalink.Client(self.bot.user.id)
+                self.bot.lavalink.add_node(
+                    self.bot.config["lavalink_ip"],
+                    8080,
+                    self.bot.config["lavalink"],
+                    "us",
+                    "us-east",
+                )
+                self.bot.add_listener(
+                    self.bot.lavalink.voice_update_handler, "on_socket_response"
+                )
+                self.bot.lavalink.add_event_hook(self.track_hook)
 
     async def track_hook(self, event):
         if isinstance(event, lavalink.TrackStartEvent):
@@ -70,7 +79,9 @@ class music:
         ws = self.bot._connection._get_websocket(guild_id)
         await ws.voice_state(str(guild_id), channel_id)
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
+        if not await self.bot.redis.execute("GET", f"{ctx.author.id}-vote"):
+            raise (errorhandler.hasVoted(ctx))
         player = self.bot.lavalink.players.create(
             ctx.guild.id, endpoint=ctx.guild.region.value
         )

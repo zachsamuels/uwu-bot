@@ -13,11 +13,11 @@ from random import choice
 uwu_emote = "<:uwu:521394346688249856>"
 
 
-class daily:
+class daily(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if await self.bot.pool.fetchrow(
             "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
         ):

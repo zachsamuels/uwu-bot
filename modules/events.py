@@ -16,11 +16,11 @@ event_ids = [
 ]
 
 
-class events:
+class events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if ctx.author.id in event_ids:
             return True
 

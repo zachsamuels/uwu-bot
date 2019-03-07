@@ -7,7 +7,7 @@ import asyncio
 import logging
 
 
-class DiscordBotsOrgAPI:
+class DiscordBotsOrgAPI(commands.Cog):
     """Handles interactions with the discordbots.org API"""
 
     def __init__(self, bot):

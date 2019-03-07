@@ -11,14 +11,14 @@ from utils import errorhandler
 from utils import extras
 
 
-class exploring:
+class exploring(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.exploring_task = self.bot.loop.create_task(self.explore_waiter())
         self.adventure_task = self.bot.loop.create_task(self.adventure_waiter())
         self.task_check_task = self.bot.loop.create_task(self.task_check())
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if await self.bot.pool.fetchrow(
             "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
         ):
@@ -26,7 +26,7 @@ class exploring:
 
         raise (errorhandler.hasUwU(ctx))
 
-    def __unload(self):
+    def cog_unload(self):
         try:
             self.exploring_task.cancel()
             self.adventure_task.cancel()

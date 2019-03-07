@@ -1,10 +1,11 @@
 import aiohttp
 import discord
 import discord.ext.commands
+from discord.ext import commands
 from discord import Webhook, AsyncWebhookAdapter
 
 
-class logging:
+class logging(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.hidden = True
@@ -35,8 +36,7 @@ class logging:
             embed.add_field(name="Guild", value=f"Private message", inline=False)
         async with aiohttp.ClientSession() as session:
             webhook = Webhook.from_url(
-                "https://canary.discordapp.com/api/webhooks/530571001138774037/q2i5bEI_g-CMPdlJgEFHwkoqjzCpF2cOMlilY8CNyYkU5iBukPDJRyOUwIpQK9ju5tfT",
-                adapter=AsyncWebhookAdapter(session),
+                self.bot.config["webhook_url"], adapter=AsyncWebhookAdapter(session)
             )
             await webhook.send(
                 embed=embed,
@@ -58,8 +58,7 @@ class logging:
         )
         async with aiohttp.ClientSession() as session:
             webhook = Webhook.from_url(
-                "https://canary.discordapp.com/api/webhooks/530571001138774037/q2i5bEI_g-CMPdlJgEFHwkoqjzCpF2cOMlilY8CNyYkU5iBukPDJRyOUwIpQK9ju5tfT",
-                adapter=AsyncWebhookAdapter(session),
+                self.bot.config["webhook_url"], adapter=AsyncWebhookAdapter(session)
             )
             await webhook.send(
                 embed=embed,
@@ -73,8 +72,7 @@ class logging:
         embed.set_thumbnail(url=guild.icon_url)
         async with aiohttp.ClientSession() as session:
             webhook = Webhook.from_url(
-                "https://canary.discordapp.com/api/webhooks/530571001138774037/q2i5bEI_g-CMPdlJgEFHwkoqjzCpF2cOMlilY8CNyYkU5iBukPDJRyOUwIpQK9ju5tfT",
-                adapter=AsyncWebhookAdapter(session),
+                self.bot.config["webhook_url"], adapter=AsyncWebhookAdapter(session)
             )
             await webhook.send(
                 embed=embed,
@@ -82,9 +80,11 @@ class logging:
                 avatar_url=self.bot.user.avatar_url,
             )
 
+    @commands.Cog.listener()
     async def on_command(self, ctx):
         self.bot.loop.create_task(self.commandtask(ctx))
 
+    @commands.Cog.listener()
     async def on_message(self, message):
         ctx = await self.bot.get_context(message)
         if (
@@ -95,9 +95,11 @@ class logging:
         ):
             self.bot.loop.create_task(self.dmtask(ctx))
 
+    @commands.Cog.listener()
     async def on_guild_join(self, guild):
         self.bot.loop.create_task(self.guildtask(guild, "Join"))
 
+    @commands.Cog.listener()
     async def on_guild_remove(self, guild):
         self.bot.loop.create_task(self.guildtask(guild, "Leave"))
 

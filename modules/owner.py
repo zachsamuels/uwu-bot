@@ -12,7 +12,7 @@ import io
 import traceback
 
 
-class owner:
+class owner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.staff_ids = [
@@ -21,7 +21,7 @@ class owner:
             428_888_500_964_687_873,
         ]
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if ctx.author.id in self.staff_ids:
             return True
 

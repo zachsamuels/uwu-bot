@@ -10,11 +10,11 @@ from random import randint
 from utils import errorhandler
 
 
-class patron:
+class patron(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if await self.bot.pool.fetchrow(
             "SELECT user_id FROM p_users WHERE user_id = $1", ctx.author.id
         ):

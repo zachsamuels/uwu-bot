@@ -4,7 +4,7 @@ from discord.ext.commands import cooldown
 from discord.ext.commands.cooldowns import BucketType
 
 
-class help:
+class help(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 

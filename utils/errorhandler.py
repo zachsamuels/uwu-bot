@@ -97,10 +97,11 @@ class isBeta(commands.CommandError):
         super().__init__(f"This is a beta-server only command.")
 
 
-class errorhandler:
+class errorhandler(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if hasattr(ctx.command, "on_error"):
             return
@@ -131,6 +132,8 @@ class errorhandler:
             await ctx.caution(
                 f"Required argument `{str(error.param).split(':')[0]}` is missing. Ya sure you read the command description?"
             )
+        elif isinstance(error, commands.MissingPermissions):
+            await ctx.caution(error)
         elif isinstance(error, commands.DisabledCommand):
             await ctx.caution(f"{ctx.command} is disabled.")
         elif isinstance(error, commands.BotMissingPermissions):

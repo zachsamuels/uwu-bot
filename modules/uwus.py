@@ -15,12 +15,12 @@ tails = "<:uwutails:517081802246979616>"
 uwu_emote = "<:uwu:521394346688249856>"
 
 
-class uwus:
+class uwus(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.active_games = []
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if await self.bot.pool.fetchrow(
             "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
         ):
@@ -213,6 +213,92 @@ You have 30 seconds to guess! Good luck!
                 user.id,
             )
             await ctx.send(f"{uwu_emote} You gave `{amount}` to `{user.name}`")
+
+    @commands.command()
+    async def scavenge(self, ctx):
+        async with self.bot.pool.acquire() as conn:
+            uwulonian = await conn.fetchrow(
+                "SELECT * FROM user_stats WHERE user_id = $1", ctx.author.id
+            )
+            if uwulonian["current_xp"] < 500:
+                return await ctx.caution("You must have atleast 500xp to scavenge.")
+            if choice(["false", "true"]) == "false":
+                xp_lost = randint(100, 500)
+                await conn.execute(
+                    "UPDATE user_stats SET current_xp = user_stats.current_xp - $1, total_deaths = user_stats.total_deaths + 1 WHERE user_id = $2",
+                    xp_lost,
+                    ctx.author.id,
+                )
+                return await ctx.send(
+                    f"You died while scavenging and lost {xp_lost}xp..."
+                )
+            else:
+                xp_won = randint(200, 800)
+                booster = await conn.fetchrow(
+                    "SELECT boost_type, boost_amount, active_boosters FROM user_boosters WHERE user_id = $1",
+                    ctx.author.id,
+                )
+                if not booster or booster["boost_type"] == "uwus":
+                    await conn.execute(
+                        "UPDATE user_stats SET current_xp = user_stats.current_xp + $1 WHERE user_id = $2",
+                        xp_won,
+                        ctx.author.id,
+                    )
+                    return await ctx.send(
+                        f"""{uwulonian["username"]} is back from scavenging and gained {xp_won}xp"""
+                    )
+                if booster["boost_type"] == "XP":
+                    xp_won = xp_won * booster["boost_amount"]
+                    await ctx.send(
+                        f"""You have a {booster["boost_amount"]} XP booster active."""
+                    )
+                    await conn.execute(
+                        "UPDATE user_stats SET current_xp = user_stats.current_xp + $1 WHERE user_id = $2",
+                        xp_won,
+                        ctx.author.id,
+                    )
+                    return await ctx.send(
+                        f"""{uwulonian["username"]} is back from scavenging and gained {xp_won}xp"""
+                    )
+                await conn.execute(
+                    "UPDATE user_stats SET current_xp = user_stats.current_xp + $1 WHERE user_id = $2",
+                    xp_won,
+                    ctx.author.id,
+                )
+                return await ctx.send(
+                    f"""{uwulonian["username"]} is back from scavenging and gained {xp_won}xp"""
+                )
+
+    @commands.command()
+    async def convert(self, ctx, exchange, amount: int):
+        async with self.bot.pool.acquire() as conn:
+            uwulonian = await conn.fetchrow(
+                "SELECT * FROM user_stats WHERE user_id = $1", ctx.author.id
+            )
+            if exchange.lower() not in ["uwus", "xp"]:
+                return await ctx.caution("Please only use uwus or xp.")
+            if exchange.lower() == "xp":
+                if uwulonian["current_xp"] < amount:
+                    return await ctx.caution(
+                        "You don't have enough XP to exchange that."
+                    )
+                await conn.execute(
+                    "UPDATE user_stats SET current_xp = user_stats.current_xp - $1, uwus = user_stats.uwus + $2",
+                    amount,
+                    amount,
+                )
+                await ctx.send(f"Converted {amount}xp to {amount} uwus")
+            if exchange.lower() == "uwus":
+                if uwulonian["uwus"] < amount:
+                    return await ctx.caution(
+                        "You don't have enough uwus to exchange that."
+                    )
+                await conn.execute(
+                    "UPDATE user_stats SET current_xp = user_stats.current_xp + $1, uwus = user_stats.uwus - $2",
+                    amount,
+                    amount,
+                )
+                await ctx.send(f"Converted {amount} uwus to {amount}xp")
 
 
 def setup(bot):

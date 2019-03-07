@@ -14,11 +14,11 @@ broken_heartt = "<:brokenheartt:521074570707468308>"
 caution = "<:caution:521002590566219776>"
 
 
-class marriage:
+class marriage(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def __local_check(self, ctx):
+    async def cog_check(self, ctx):
         if await self.bot.pool.fetchrow(
             "SELECT user_id FROM user_settings WHERE user_id = $1", ctx.author.id
         ):
