@@ -319,11 +319,14 @@ uwu rules. You must follow these or we will take action
     async def love(self, ctx, lover: discord.Member, lovee: discord.Member):
         msg = await ctx.send("**Calculating...**")
         await asyncio.sleep(3)
-        seed(int(str(lover.id) + str(lovee.id)))
-        if lover == lovee:
-            love = 0
+        if lover.id in (300088143422685185, 422181415598161921) and lovee.id in (300088143422685185, 422181415598161921):
+            love = 100.00
         else:
-            love = randint(1, 10000) / 100
+            seed(int(str(lover.id) + str(lovee.id)))
+            if lover == lovee:
+                love = 0
+            else:
+                love = randint(1, 10000) / 100
         await msg.edit(
             content=f"The love calculator says {lover.name} loves {lovee.name} **{love}**%"
         )
