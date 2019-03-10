@@ -316,9 +316,11 @@ uwu rules. You must follow these or we will take action
         await msg.edit(content=f"A: **{choice(responses)}**")
 
     @commands.command(aliases=["lovedar"])
-    async def love(self, ctx, lover: discord.Member, lovee: discord.Member):
+    async def love(self, ctx, lover: discord.Member, lovee: discord.Member=None):
         msg = await ctx.send("**Calculating...**")
         await asyncio.sleep(3)
+        if not lovee:
+            lovee = ctx.author
         if lover.id in (300088143422685185, 422181415598161921) and lovee.id in (300088143422685185, 422181415598161921):
             love = 100.00
         else:
